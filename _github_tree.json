@@ -1,0 +1,484 @@
+{
+  "sha": "38cb78dab30b456e4219b08688d8b614b690a1e8",
+  "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/trees/38cb78dab30b456e4219b08688d8b614b690a1e8",
+  "tree": [
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6632a0437940eb2beeab675cf72df2fef833b97c",
+      "size": 111,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/6632a0437940eb2beeab675cf72df2fef833b97c"
+    },
+    {
+      "path": "00_首页.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "315f68cfe763cbbb6e7b7b51cdfbb2ae7f1037da",
+      "size": 3410,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/315f68cfe763cbbb6e7b7b51cdfbb2ae7f1037da"
+    },
+    {
+      "path": "01_选择剧集.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "93ae59fbbddb10ab7ae37805f3a14ec5673667f7",
+      "size": 6144,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/93ae59fbbddb10ab7ae37805f3a14ec5673667f7"
+    },
+    {
+      "path": "02_选择角色.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3227ea439877b3594099a8cf78e23d7b84a41039",
+      "size": 7236,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/3227ea439877b3594099a8cf78e23d7b84a41039"
+    },
+    {
+      "path": "03_上传照片.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ca200ece6a2fcad763c3c39b47b6aa3edaaa5ce",
+      "size": 7116,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/0ca200ece6a2fcad763c3c39b47b6aa3edaaa5ce"
+    },
+    {
+      "path": "04_AI生成等待.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "520ae04016a2c21c7aaeeedd357fdf2efac3a85a",
+      "size": 3756,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/520ae04016a2c21c7aaeeedd357fdf2efac3a85a"
+    },
+    {
+      "path": "05_生成结果.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a1bea3186e31e49146979102757593221644461",
+      "size": 6142,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/0a1bea3186e31e49146979102757593221644461"
+    },
+    {
+      "path": "06_登录解锁弹窗.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "090d6055dc7861603c535d50b5627352b3ab0b4f",
+      "size": 5997,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/090d6055dc7861603c535d50b5627352b3ab0b4f"
+    },
+    {
+      "path": "07_选择图片版本.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d6d45dc7d06be635d9c26771e37639ac7c0a5fe",
+      "size": 3947,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/6d6d45dc7d06be635d9c26771e37639ac7c0a5fe"
+    },
+    {
+      "path": "08_输入花名.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "23c336b291089e904f754a511f34b765db29a9f7",
+      "size": 3944,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/23c336b291089e904f754a511f34b765db29a9f7"
+    },
+    {
+      "path": "09_选择关系设定.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0cf358ed3ddb1d9c2df03bdfcddfffceae3ed05",
+      "size": 4300,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/d0cf358ed3ddb1d9c2df03bdfcddfffceae3ed05"
+    },
+    {
+      "path": "10_选择剧情走向.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd34a1af72c652eb4267e9321560b6d33ba50e89",
+      "size": 6407,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/cd34a1af72c652eb4267e9321560b6d33ba50e89"
+    },
+    {
+      "path": "11_同人文结果与解锁.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1547e294c555d377dc6190d948c7bfe7b25e01f7",
+      "size": 4294,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/1547e294c555d377dc6190d948c7bfe7b25e01f7"
+    },
+    {
+      "path": "12_选择CP生成合照.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "390966108c42d89b5e8d4a2093018f6b62fc7f5a",
+      "size": 6348,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/390966108c42d89b5e8d4a2093018f6b62fc7f5a"
+    },
+    {
+      "path": "13_CP合照预览与操作.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9113fa90c6215cf9a63d696ea56ca740a7b16e1c",
+      "size": 5951,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/9113fa90c6215cf9a63d696ea56ca740a7b16e1c"
+    },
+    {
+      "path": "14_完成页.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dcc1581b75743c96182db446d73eabea8000baa5",
+      "size": 6556,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/dcc1581b75743c96182db446d73eabea8000baa5"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55a6057cf8fa28600addf6f9eec99af9956ad49f",
+      "size": 4135,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/55a6057cf8fa28600addf6f9eec99af9956ad49f"
+    },
+    {
+      "path": "assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8fa9bc11b3aea21ffd64c5e73610f97a4534059b",
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/trees/8fa9bc11b3aea21ffd64c5e73610f97a4534059b"
+    },
+    {
+      "path": "assets/bg.PNG",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9132c144118947c32509693f836754ea6dc5bc54",
+      "size": 984471,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/9132c144118947c32509693f836754ea6dc5bc54"
+    },
+    {
+      "path": "assets/cp.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed7991b59ece5ca6c43645b52648d9b7f0f3fc9b",
+      "size": 5430257,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/ed7991b59ece5ca6c43645b52648d9b7f0f3fc9b"
+    },
+    {
+      "path": "assets/fenshou.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "89bc18708713ced01f83a366e15d9aa4fbf96e2c",
+      "size": 2364831,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/89bc18708713ced01f83a366e15d9aa4fbf96e2c"
+    },
+    {
+      "path": "assets/image",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a90b44d180a797d511ee5be8d9f503a4e3970cc0",
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/trees/a90b44d180a797d511ee5be8d9f503a4e3970cc0"
+    },
+    {
+      "path": "assets/image/template_zhuyu_female_1.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e14d94c5b34f12ba247462054d76d279a94e17a",
+      "size": 1107011,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/2e14d94c5b34f12ba247462054d76d279a94e17a"
+    },
+    {
+      "path": "assets/image/template_zhuyu_female_2.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f74a9795d176eb8598a230cc1de5f4b4ae8c76f",
+      "size": 1157422,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/1f74a9795d176eb8598a230cc1de5f4b4ae8c76f"
+    },
+    {
+      "path": "assets/image/template_zhuyu_female_3.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57cd958dc18c41a222c4e4559506896ff51502df",
+      "size": 1450473,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/57cd958dc18c41a222c4e4559506896ff51502df"
+    },
+    {
+      "path": "assets/image/template_zhuyu_female_4.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57006614c887e6b378126b1bd0ca362467fe0ce9",
+      "size": 950174,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/57006614c887e6b378126b1bd0ca362467fe0ce9"
+    },
+    {
+      "path": "assets/image/template_zhuyu_female_5.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b545e02c1d730ba6496b8de0913f84e649649d04",
+      "size": 1334474,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/b545e02c1d730ba6496b8de0913f84e649649d04"
+    },
+    {
+      "path": "assets/image/template_zhuyu_female_6.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0add43d465ee0959a41b58ed37aeac23cb996723",
+      "size": 110079,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/0add43d465ee0959a41b58ed37aeac23cb996723"
+    },
+    {
+      "path": "assets/image/template_zhuyu_female_7.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e348c1ace73359df3944ec5d60c62ac37d7cba3c",
+      "size": 608589,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/e348c1ace73359df3944ec5d60c62ac37d7cba3c"
+    },
+    {
+      "path": "assets/image/template_zhuyu_male_1.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aab59b60216c1445fd76be881895458f3ba7446c",
+      "size": 1506775,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/aab59b60216c1445fd76be881895458f3ba7446c"
+    },
+    {
+      "path": "assets/image/template_zhuyu_male_2.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1f6fc0f83464d8437d594ba8dc396f1db3aaeea",
+      "size": 1196914,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/e1f6fc0f83464d8437d594ba8dc396f1db3aaeea"
+    },
+    {
+      "path": "assets/image/template_zhuyu_male_3.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2a59512aae10cded65a6aae946943b4b8cee598d",
+      "size": 1415646,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/2a59512aae10cded65a6aae946943b4b8cee598d"
+    },
+    {
+      "path": "assets/image/template_zhuyu_male_4.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fcd50358f03899465407bcf1dcbf4696f9d9b978",
+      "size": 1143295,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/fcd50358f03899465407bcf1dcbf4696f9d9b978"
+    },
+    {
+      "path": "assets/image/template_zhuyu_male_5.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "611ee757628280dab42e09c24efebc9dddbd8241",
+      "size": 2208377,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/611ee757628280dab42e09c24efebc9dddbd8241"
+    },
+    {
+      "path": "assets/jian.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88281af11eb7181a425f27ec9ff09650a089a364",
+      "size": 2228275,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/88281af11eb7181a425f27ec9ff09650a089a364"
+    },
+    {
+      "path": "assets/logo.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "967b6f075fecb7b46b7df4e534f5a729f67bd093",
+      "size": 1649523,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/967b6f075fecb7b46b7df4e534f5a729f67bd093"
+    },
+    {
+      "path": "assets/moren.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8e1ce9d6a6a0faf6ea5f9e7737a10805cc049aab",
+      "size": 3576134,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/8e1ce9d6a6a0faf6ea5f9e7737a10805cc049aab"
+    },
+    {
+      "path": "assets/shipin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "79f8e1e797314be29792bde0e69d48d4f5327204",
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/trees/79f8e1e797314be29792bde0e69d48d4f5327204"
+    },
+    {
+      "path": "assets/shipin/1.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "52170e108c4e6ffef0b102987cb24fb07e946491",
+      "size": 15570036,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/52170e108c4e6ffef0b102987cb24fb07e946491"
+    },
+    {
+      "path": "assets/shipin/2.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "675d03ec3e33f15a6f3a443da1cf80d5ff99bc0a",
+      "size": 2168289,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/675d03ec3e33f15a6f3a443da1cf80d5ff99bc0a"
+    },
+    {
+      "path": "assets/shipin/3.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "546a338eae9d72890b111ae768b4bdc0156d81ef",
+      "size": 2730923,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/546a338eae9d72890b111ae768b4bdc0156d81ef"
+    },
+    {
+      "path": "assets/tian.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a515b077f11e085c354a18d1bbcd904e938a6fc",
+      "size": 2427910,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/7a515b077f11e085c354a18d1bbcd904e938a6fc"
+    },
+    {
+      "path": "assets/touxiang.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "980c39c682cf36ab998f8524bea3f8572523ca70",
+      "size": 1315990,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/980c39c682cf36ab998f8524bea3f8572523ca70"
+    },
+    {
+      "path": "assets/touxiang_smail.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "980c39c682cf36ab998f8524bea3f8572523ca70",
+      "size": 1315990,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/980c39c682cf36ab998f8524bea3f8572523ca70"
+    },
+    {
+      "path": "complete.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "061cc521767553773961691ae15db6bff7a9fbe5",
+      "size": 20793,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/061cc521767553773961691ae15db6bff7a9fbe5"
+    },
+    {
+      "path": "config.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7490eaddc9d1a7cd22dbf4f969df056ff7273170",
+      "size": 15643,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/7490eaddc9d1a7cd22dbf4f969df056ff7273170"
+    },
+    {
+      "path": "index.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6898a03ad8513c7e870c97ad45d65dbc15cdf8d5",
+      "size": 6401,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/6898a03ad8513c7e870c97ad45d65dbc15cdf8d5"
+    },
+    {
+      "path": "serve.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f54189c38eb2bf975082f80aabd5064bcf9b360",
+      "size": 368,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/6f54189c38eb2bf975082f80aabd5064bcf9b360"
+    },
+    {
+      "path": "step1.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6055c2a0fbc893630ccf9546103d5bbfb7c4ab24",
+      "size": 15166,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/6055c2a0fbc893630ccf9546103d5bbfb7c4ab24"
+    },
+    {
+      "path": "step2.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf7780d89a4e5a99ac4092af4e7dd7d0df52b011",
+      "size": 23196,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/cf7780d89a4e5a99ac4092af4e7dd7d0df52b011"
+    },
+    {
+      "path": "step3.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "538ce4185ac65602baf85b33fa37f32848dc8ad9",
+      "size": 17790,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/538ce4185ac65602baf85b33fa37f32848dc8ad9"
+    },
+    {
+      "path": "step4.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ca0b4a44f00be2b345d3d8af7a75dd61b5f517ad",
+      "size": 13596,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/ca0b4a44f00be2b345d3d8af7a75dd61b5f517ad"
+    },
+    {
+      "path": "step4b.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "209ef0c5d2b3a557f38a5b35ab9ef05def9ac5f2",
+      "size": 18611,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/209ef0c5d2b3a557f38a5b35ab9ef05def9ac5f2"
+    },
+    {
+      "path": "step4c.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0de08936869984ec73eeaa8cd9ef87e52c1a4a24",
+      "size": 22281,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/0de08936869984ec73eeaa8cd9ef87e52c1a4a24"
+    },
+    {
+      "path": "step5_result.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff23916d3802f0108fffda6ca71c70787283b895",
+      "size": 22451,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/ff23916d3802f0108fffda6ca71c70787283b895"
+    },
+    {
+      "path": "step5a.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "11222bab6bedc40390676195c4f79eb0d160e603",
+      "size": 17712,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/11222bab6bedc40390676195c4f79eb0d160e603"
+    },
+    {
+      "path": "step5b.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "97d82587ee26bc03c3f80d4514caed62a7389993",
+      "size": 21957,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/97d82587ee26bc03c3f80d4514caed62a7389993"
+    },
+    {
+      "path": "step5c.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "870bfdb4cc7d09292c9f75b57e7ac211ac9ef20d",
+      "size": 23899,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/870bfdb4cc7d09292c9f75b57e7ac211ac9ef20d"
+    },
+    {
+      "path": "step6_cp.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b9fc4b5ca87ff6593f3849329dc4c5290c31630b",
+      "size": 27912,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/b9fc4b5ca87ff6593f3849329dc4c5290c31630b"
+    },
+    {
+      "path": "step7_cp_result.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ffd840253eaa77db7124cbb6c586bccbc60e9426",
+      "size": 18581,
+      "url": "https://api.github.com/repos/Elysia-23366/shimeng/git/blobs/ffd840253eaa77db7124cbb6c586bccbc60e9426"
+    }
+  ],
+  "truncated": false
+}
