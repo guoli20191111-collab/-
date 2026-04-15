@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾梦录 · 古风AI角色生成</title>
+  <!-- 预连接 Google Fonts，减少 DNS 查询延迟 -->
+  <!-- 预加载 logo，让浏览器优先获取 -->
+  <link rel="preload" as="image" href="assets/logo.webp" type="image/webp">
+  <link rel="preload" as="image" href="assets/logo.png" imagesrcset="assets/logo.webp" imagesizes="auto">
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+    }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .bg-video.active {
+      opacity: 1;
+    }
+
+    .bg-mask {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,6,15,0.7) 0%,
+        rgba(8,6,15,0.3) 50%,
+        rgba(8,6,15,0.8) 100%
+      );
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+    }
+
+    .logo-container {
+      margin-bottom: 48px;
+      animation: fadeInDown 1s ease-out;
+    }
+
+    .logo-img {
+      height: 120px;
+      width: auto;
+      filter: drop-shadow(0 8px 24px rgba(200,160,100,0.3));
+    }
+
+    .subtitle {
+      font-size: 18px;
+      font-weight: 300;
+      color: rgba(255,240,210,0.6);
+      letter-spacing: 0.5em;
+      margin-bottom: 60px;
+      text-align: center;
+      animation: fadeInUp 1s ease-out 0.4s both;
+    }
+
+    .start-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 0 64px;
+      height: 64px;
+      background: linear-gradient(
+        135deg,
+        rgba(200,160,100,0.25) 0%,
+        rgba(180,120,80,0.2) 100%
+      );
+      border: 1px solid rgba(220,180,120,0.6);
+      border-radius: 8px;
+      color: rgba(255,240,210,0.95);
+      font-family: inherit;
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: 0.4em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(200,160,100,0.2);
+      animation: fadeInUp 1s ease-out 0.6s both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .start-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(220,180,120,0.15) 0%,
+        rgba(200,140,100,0.1) 100%
+      );
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .start-btn:hover::before {
+      opacity: 1;
+    }
+
+    .start-btn:hover {
+      transform: translateY(-4px);
+      border-color: rgba(240,200,140,0.8);
+      box-shadow: 0 16px 48px rgba(220,180,120,0.35);
+    }
+
+    .start-btn .icon {
+      font-size: 16px;
+      color: rgba(220,180,120,0.85);
+      transition: color 0.3s;
+    }
+
+    .start-btn:hover .icon {
+      color: rgba(240,200,140,1);
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .decoration {
+      position: absolute;
+      font-size: 12px;
+      color: rgba(200,160,100,0.15);
+      pointer-events: none;
+    }
+
+    .decoration.top-left {
+      top: 80px;
+      left: 80px;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .decoration.top-right {
+      top: 80px;
+      right: 80px;
+      animation: float 4s ease-in-out infinite 2s;
+    }
+
+    .decoration.bottom-left {
+      bottom: 80px;
+      left: 80px;
+      animation: float 4s ease-in-out infinite 1s;
+    }
+
+    .decoration.bottom-right {
+      bottom: 80px;
+      right: 80px;
+      animation: float 4s ease-in-out infinite 3s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <video class="bg-video active" autoplay muted playsinline preload="auto">
+      <source src="assets/shipin/2.webm" type="video/webm">
+      <source src="assets/shipin/2.mp4" type="video/mp4">
+    </video>
+    <video class="bg-video" muted playsinline preload="none">
+      <source src="assets/shipin/3.webm" type="video/webm">
+      <source src="assets/shipin/3.mp4" type="video/mp4">
+    </video>
+    <div class="bg-mask"></div>
+  </div>
+
+  <div class="decoration top-left">✦</div>
+  <div class="decoration top-right">✦</div>
+  <div class="decoration bottom-left">✦</div>
+  <div class="decoration bottom-right">✦</div>
+
+  <div class="container">
+    <div class="logo-container">
+      <!-- 使用 picture 优先加载 WebP，自动回退 PNG -->
+      <picture>
+        <source srcset="assets/logo.webp" type="image/webp">
+        <img class="logo-img" src="assets/logo.png" alt="拾梦录"
+             width="376" height="240" loading="eager" fetchpriority="high">
+      </picture>
+    </div>
+
+    <p class="subtitle">旧梦可拾，此刻成录</p>
+
+    <button class="start-btn" id="startBtn">
+      <span class="icon">✦</span>
+      <span>开始体验</span>
+      <span class="icon">✦</span>
+    </button>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const videos = document.querySelectorAll('.bg-video');
+    let currentVideoIndex = 0;
+
+    // 预加载指定索引的视频
+    function preloadVideo(index) {
+      const video = videos[index];
+      if (video.preload === 'none') {
+        video.preload = 'auto';
+        video.load();
+      }
+    }
+
+    // 切换到指定视频
+    function switchToVideo(nextIndex) {
+      const current = videos[currentVideoIndex];
+      const next = videos[nextIndex];
+      currentVideoIndex = nextIndex;
+      next.currentTime = 0;
+
+      // 只有 next 真正开始播放后才执行淡入淡出，避免黑屏
+      const doSwitch = () => {
+        next.classList.add('active');
+        // 等淡入淡出过渡完成后再隐藏旧视频（transition 1.5s + 100ms 余量）
+        setTimeout(() => current.classList.remove('active'), 1600);
+      };
+
+      const playPromise = next.play();
+      if (playPromise !== undefined) {
+        playPromise.then(doSwitch).catch(() => {
+          // 未缓冲完成时等 canplay；期间 current 保持可见，不出黑屏
+          next.addEventListener('canplay', () => {
+            next.play().catch(() => {});
+            doSwitch();
+          }, { once: true });
+        });
+      } else {
+        doSwitch();
+      }
+
+      // 再预加载下下个视频
+      const afterNext = (nextIndex + 1) % videos.length;
+      preloadVideo(afterNext);
+    }
+
+    videos.forEach((video, index) => {
+      video.addEventListener('ended', () => {
+        if (index === currentVideoIndex) {
+          switchToVideo((currentVideoIndex + 1) % videos.length);
+        }
+      });
+
+      // 当前视频播放到 80% 时，提前预加载下一个
+      video.addEventListener('timeupdate', () => {
+        if (index === currentVideoIndex && video.duration > 0) {
+          const progress = video.currentTime / video.duration;
+          if (progress > 0.8) {
+            preloadVideo((currentVideoIndex + 1) % videos.length);
+          }
+        }
+      });
+    });
+
+    // 第一个视频已设置 preload="auto"，直接播放
+    videos[0].play().catch(() => {
+      videos[0].addEventListener('canplay', () => videos[0].play(), { once: true });
+    });
+
+    startBtn.addEventListener('click', () => {
+      window.location.href = 'step1.html';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>古风同人图 · 上传照片</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+    }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .bg-video.active {
+      opacity: 1;
+    }
+
+    .bg-mask {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,6,15,0.7) 0%,
+        rgba(8,6,15,0.3) 50%,
+        rgba(8,6,15,0.8) 100%
+      );
+    }
+
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,5,16,0.82) 0%,
+        rgba(12,8,22,0.68) 100%
+      );
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      gap: 0;
+    }
+
+    .nav::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.15) 15%,
+        rgba(200,160,100,0.45) 40%,
+        rgba(220,180,120,0.55) 50%,
+        rgba(200,160,100,0.45) 60%,
+        rgba(200,160,100,0.15) 85%,
+        transparent 100%
+      );
+    }
+    .nav::before {
+      content: '';
+      position: absolute; bottom: -3px; left: 15%; right: 15%;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.08) 20%,
+        rgba(200,160,100,0.2) 50%,
+        rgba(200,160,100,0.08) 80%,
+        transparent 100%
+      );
+    }
+
+    .nav-logo {
+      display: flex; align-items: center;
+      text-decoration: none; flex-shrink: 0;
+      margin-right: 36px;
+      position: relative;
+    }
+    .logo-img { height: 72px; width: auto; display: block; }
+
+    .nav-center { position: relative; flex-shrink: 0; }
+
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,160,100,0.3);
+      border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit;
+      font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer;
+      transition: background 0.22s, border-color 0.22s, color 0.22s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .dropdown-btn:hover {
+      background: rgba(200,160,100,0.1);
+      border-color: rgba(200,160,100,0.65);
+      color: rgba(255,240,210,1);
+    }
+    .dropdown-btn.open {
+      background: rgba(200,160,100,0.12);
+      border-color: rgba(220,180,120,0.8);
+      color: #fff;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .dropdown-btn .btn-diamond {
+      font-size: 7px; color: rgba(200,160,100,0.6);
+      transition: color 0.22s;
+    }
+    .dropdown-btn:hover .btn-diamond,
+    .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow {
+      font-size: 8px; color: rgba(200,160,100,0.5);
+      transition: transform 0.2s, color 0.2s;
+      margin-left: 2px;
+    }
+    .dropdown-btn.open .arrow {
+      transform: rotate(180deg);
+      color: rgba(220,180,120,0.8);
+    }
+
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0;
+      min-width: 100%;
+      background: rgba(8,5,16,0.95);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open {
+      opacity: 1; pointer-events: auto;
+      transform: translateY(0);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px;
+      font-size: 13px; letter-spacing: 0.22em; color: rgba(255,240,210,0.5);
+      cursor: pointer; transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before {
+      content: '◆'; margin-right: 8px; font-size: 5px;
+      color: rgba(200,160,100,0.8); vertical-align: middle;
+    }
+
+    .nav-avatar-wrapper { position: relative; margin-left: auto; }
+    .nav-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(200,160,100,0.4);
+      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .nav-avatar.has-photo { border-color: rgba(220,180,120,0.8); }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-avatar-placeholder { font-size: 20px; color: rgba(200,160,100,0.3); }
+    .avatar-dropdown {
+      display: none; position: absolute; top: 52px; right: 0;
+      min-width: 160px; z-index: 500;
+      background: rgba(8,5,16,0.97); border: 1px solid rgba(200,160,100,0.3); border-radius: 8px;
+      overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .avatar-dropdown.open { display: block; }
+    .avatar-dropdown-item {
+      padding: 12px 20px; font-size: 13px; letter-spacing: 0.15em;
+      color: rgba(255,240,210,0.7); border-bottom: 1px solid rgba(200,160,100,0.1);
+      white-space: nowrap;
+    }
+    .avatar-dropdown-item:last-child { border-bottom: none; }
+    .avatar-dropdown-item.logout-btn { color: rgba(255,160,160,0.9); cursor: pointer; }
+    .avatar-dropdown-item.logout-btn:hover { background: rgba(180,60,60,0.15); }
+
+
+
+    .prog {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+      height: 2px; background: rgba(255,255,255,0.04);
+    }
+    .prog-fill {
+      height: 100%; width: 66.66%;
+      background: linear-gradient(to right, rgba(180,120,160,0.8), rgba(200,160,100,0.8));
+    }
+
+    .main {
+      position: fixed; inset: 68px 0 0 0;
+      z-index: 100;
+      display: flex; flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    .step-title {
+      flex-shrink: 0;
+      padding: 28px 48px 20px;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 16px;
+      width: 100%;
+      font-size: 15px;
+      letter-spacing: 0.45em;
+      color: rgba(255,240,210,0.65);
+      user-select: none;
+      -webkit-user-select: none;
+      position: relative;
+    }
+
+    .header-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      position: absolute;
+      right: 48px;
+      border: 1px solid rgba(200,160,100,0.25);
+      border-radius: 20px;
+      background: rgba(16,12,24,0.4);
+      cursor: pointer;
+      transition: all 0.22s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    .header-back:hover {
+      border-color: rgba(220,180,120,0.6);
+      background: rgba(200,160,100,0.08);
+      transform: translateX(-2px);
+    }
+    
+    .header-back-icon {
+      font-size: 14px;
+      color: rgba(200,160,100,0.7);
+      transition: color 0.22s;
+    }
+    
+    .header-back:hover .header-back-icon {
+      color: rgba(220,180,120,0.95);
+    }
+    
+    .header-back-text {
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: rgba(255,240,210,0.6);
+      transition: color 0.22s;
+    }
+    
+    .header-back:hover .header-back-text {
+      color: rgba(255,240,210,0.95);
+    }
+
+    .content-row {
+      display: flex; 
+      gap: 60px;
+      width: 100%;
+      padding: 30px 48px 50px;
+      justify-content: center;
+    }
+
+    .upload-box {
+      flex: 1;
+      min-height: 300px;
+      background: rgba(8,5,16,0.6);
+      border: 2px dashed rgba(200,160,100,0.3);
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px;
+      cursor: pointer;
+      transition: border-color 0.3s, background 0.3s;
+      position: relative;
+    }
+    .upload-box:hover {
+      border-color: rgba(200,160,100,0.6);
+      background: rgba(8,5,16,0.7);
+    }
+    .upload-box.dragging {
+      border-color: rgba(220,180,120,0.8);
+      background: rgba(200,160,100,0.1);
+    }
+    .upload-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .upload-icon {
+      font-size: 64px; margin-bottom: 20px;
+      color: rgba(200,160,100,0.5);
+      font-weight: 300;
+    }
+    .upload-text {
+      font-size: 15px; letter-spacing: 0.25em;
+      color: rgba(255,240,210,0.6);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .upload-hint {
+      font-size: 12px; letter-spacing: 0.2em;
+      color: rgba(255,240,210,0.4);
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    .upload-preview {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .upload-preview.show { display: flex; }
+    .upload-preview img {
+      max-width: 240px;
+      max-height: 240px;
+      border-radius: 8px;
+      border: 2px solid rgba(200,160,100,0.4);
+    }
+    .upload-success {
+      font-size: 13px; letter-spacing: 0.25em;
+      color: rgba(200,160,100,0.8);
+    }
+    .upload-reupload {
+      font-size: 12px; letter-spacing: 0.2em;
+      color: rgba(255,240,210,0.5);
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .upload-reupload:hover { color: rgba(255,240,210,0.9); }
+
+
+
+    .generate-btn {
+      padding: 0 48px; 
+      height: 56px;
+      min-width: 200px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      color: rgba(255,255,255,0.2);
+      font-family: inherit;
+      font-size: 16px; letter-spacing: 0.3em;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      gap: 12px;
+      position: relative;
+      z-index: 9999;
+      pointer-events: auto;
+      flex-shrink: 0;
+    }
+    .generate-btn.active {
+      color: rgba(255,240,210,0.85);
+      cursor: pointer;
+      border-color: rgba(200,160,100,0.5);
+      background: rgba(200,160,100,0.08);
+    }
+    .generate-btn.active:hover {
+      background: rgba(200,160,100,0.2);
+      border-color: rgba(220,180,120,0.85);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(200,160,100,0.2);
+    }
+    .generate-btn .diamond {
+      font-size: 8px;
+      color: rgba(200,160,100,0.4);
+      transition: color 0.3s;
+    }
+    .generate-btn.active .diamond { color: rgba(220,180,120,0.8); }
+    .generate-btn .arr {
+      font-size: 14px;
+      transition: transform 0.3s;
+    }
+    .generate-btn.active:hover .arr { transform: translateX(4px); }
+  </style>
+</head>
+<body>
+
+  <div class="bg">
+    <video class="bg-video active" autoplay muted playsinline preload="auto">
+      <source src="assets/shipin/2.mp4" type="video/mp4">
+    </video>
+    <video class="bg-video" muted playsinline preload="none">
+      <source src="assets/shipin/3.mp4" type="video/mp4">
+    </video>
+    <div class="bg-mask"></div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+
+    <div class="nav-avatar-wrapper">
+      <div class="nav-avatar" id="navAvatar">
+        <span class="nav-avatar-placeholder" id="navAvatarPlaceholder">👤</span>
+        <img id="navAvatarImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;" />
+      </div>
+      <div class="avatar-dropdown" id="avatarDropdown">
+        <div class="avatar-dropdown-item" id="navStatusText">未登录</div>
+        <div class="avatar-dropdown-item logout-btn" id="logoutBtn" style="display:none;">退出登录</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 退出登录确认弹窗 -->
+  <div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:360px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:36px 32px;font-family:'PingFang SC','Microsoft YaHei','STSong',serif;text-align:center;">
+      <div style="font-size:15px;color:rgba(255,240,210,0.9);letter-spacing:0.12em;line-height:1.8;margin-bottom:28px;">退出登录后您的记录将不再保留</div>
+      <div style="display:flex;gap:12px;">
+        <button onclick="document.getElementById('logoutModal').style.display='none'" style="flex:1;height:44px;background:rgba(255,255,255,0.05);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(200,160,100,0.8);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">取 消</button>
+        <button onclick="confirmLogout()" style="flex:1;height:44px;background:rgba(180,60,60,0.2);border:1px solid rgba(220,80,80,0.5);border-radius:6px;color:rgba(255,160,160,0.9);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">确认退出</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="prog"><div class="prog-fill"></div></div>
+
+  <main class="main">
+    <div class="step-title">
+      <span>上传照片 · 生成古风形象</span>
+      <div class="header-back" id="headerBack">
+        <span class="header-back-icon">◁</span>
+        <span class="header-back-text">返回</span>
+      </div>
+    </div>
+
+    <div class="content-row">
+      <div class="upload-box" id="uploadBox" style="max-width: 400px;">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png" style="display:none" />
+        <div class="upload-placeholder" id="uploadPlaceholder">
+          <div class="upload-icon">+</div>
+          <div class="upload-text">点击上传或拖拽至此处</div>
+          <div class="upload-hint">
+            支持 JPG / PNG<br/>
+            建议正面，光线充足
+          </div>
+        </div>
+        <div class="upload-preview" id="uploadPreview">
+          <img id="previewImg" src="" alt="预览" />
+          <div class="upload-success">✓ 上传成功</div>
+          <div class="upload-reupload" id="reuploadBtn">重新上传</div>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="generate-btn" id="generateBtn">
+      <span class="diamond">◆</span>
+      <span>下一步</span>
+      <span class="arr">→</span>
+    </button>
+  </main>
+
+  <script>
+    console.log('脚本开始执行');
+    
+    const dramas = [
+      { label:'《逐风玉恋》', bg:'assets/bg.PNG' },
+    ];
+
+    let curDrama = 0;
+    let uploadedPhoto = null;
+
+    const dropBtn = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel = document.getElementById('dropLabel');
+    const items = dropMenu.querySelectorAll('.dropdown-item');
+
+    const uploadBox = document.getElementById('uploadBox');
+    const fileInput = document.getElementById('fileInput');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const previewImg = document.getElementById('previewImg');
+    const reuploadBtn = document.getElementById('reuploadBtn');
+
+    const generateBtn = document.getElementById('generateBtn');
+
+    // ── 头像下拉 & 登录状态 ──
+    const navAvatar = document.getElementById('navAvatar');
+    const avatarDropdown = document.getElementById('avatarDropdown');
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('isLoggedIn') || localStorage.getItem('userPhone')));
+    const userEmail = localStorage.getItem('userEmail') || '';
+    const userPhoto = localStorage.getItem('userPhoto') || '';
+
+    if (isLoggedIn) {
+      document.getElementById('navStatusText').textContent = userEmail;
+      document.getElementById('logoutBtn').style.display = '';
+      if (userPhoto) {
+        navAvatar.classList.add('has-photo');
+        document.getElementById('navAvatarPlaceholder').style.display = 'none';
+        const img = document.getElementById('navAvatarImg');
+        img.src = userPhoto; img.style.display = 'block';
+      }
+    }
+
+    navAvatar.addEventListener('click', (e) => {
+      e.stopPropagation();
+      avatarDropdown.classList.toggle('open');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      avatarDropdown.classList.remove('open');
+      document.getElementById('logoutModal').style.display = 'flex';
+    });
+
+    function confirmLogout() {
+      localStorage.clear();
+      window.location.href = 'step1.html';
+    }
+
+    dropBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = dropMenu.classList.toggle('open');
+      dropBtn.classList.toggle('open', open);
+    });
+
+    document.addEventListener('click', () => {
+      dropMenu.classList.remove('open');
+      avatarDropdown.classList.remove('open');
+      dropBtn.classList.remove('open');
+    });
+
+    items.forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const i = +el.dataset.i;
+        localStorage.setItem('selectedDramaIndex', i);
+        localStorage.setItem('selectedDrama', JSON.stringify(dramas[i]));
+        window.location.href = 'step2.html';
+      });
+    });
+
+    uploadBox.addEventListener('click', () => {
+      if (!uploadedPhoto) fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    uploadBox.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadBox.classList.add('dragging');
+    });
+
+    uploadBox.addEventListener('dragleave', () => {
+      uploadBox.classList.remove('dragging');
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBox.classList.remove('dragging');
+      const file = e.dataTransfer.files[0];
+      if (file && (file.type === 'image/jpeg' || file.type === 'image/png')) {
+        handleFile(file);
+      }
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 1200;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else       { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          uploadedPhoto = canvas.toDataURL('image/jpeg', 0.75);
+          previewImg.src = uploadedPhoto;
+          uploadPlaceholder.style.display = 'none';
+          uploadPreview.classList.add('show');
+          checkComplete();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    reuploadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      uploadedPhoto = null;
+      uploadPlaceholder.style.display = 'flex';
+      uploadPreview.classList.remove('show');
+      fileInput.value = '';
+      checkComplete();
+    });
+
+    function checkComplete() {
+      if (uploadedPhoto) {
+        generateBtn.classList.add('active');
+      } else {
+        generateBtn.classList.remove('active');
+      }
+    }
+
+    function handleNextStep() {
+      if (!uploadedPhoto) {
+        alert('请先上传照片');
+        return;
+      }
+      
+      try {
+        localStorage.setItem('userPhoto', uploadedPhoto);
+        window.location.href = 'step4.html';
+      } catch (err) {
+        alert('跳转失败: ' + err.message);
+      }
+    }
+
+    generateBtn.addEventListener('click', handleNextStep);
+
+    const headerBack = document.getElementById('headerBack');
+    headerBack.addEventListener('click', () => {
+      window.location.href = 'step2.html';
+    });
+
+    const videos = document.querySelectorAll('.bg-video');
+    let currentVideoIndex = 0;
+
+    videos.forEach((video, index) => {
+      video.addEventListener('loadeddata', () => {
+        if (index === 0) {
+          video.play();
+        }
+      });
+      
+      video.addEventListener('ended', () => {
+        if (index === currentVideoIndex) {
+          video.classList.remove('active');
+          currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+          const nextVideo = videos[currentVideoIndex];
+          nextVideo.classList.add('active');
+          nextVideo.load();
+          nextVideo.play();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

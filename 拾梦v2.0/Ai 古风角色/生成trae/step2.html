@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>古风同人图 · 选择角色</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f; color: #f0e6d0;
+    }
+
+    /* ─── 全屏背景 ─── */
+    .bg { position: fixed; inset: 0; z-index: 0; }
+    .bg-img {
+      position: absolute; inset: 0;
+      background-image: url('assets/bg.PNG');
+      background-size: cover; background-position: center top;
+      filter: blur(14px); transform: scale(1.1);
+      opacity: 0.35;
+    }
+    .bg-mask {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,6,15,0.82) 0%,
+        rgba(8,6,15,0.55) 30%,
+        rgba(8,6,15,0.55) 70%,
+        rgba(8,6,15,0.9) 100%
+      );
+    }
+
+    /* ─── 导航栏 ─── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(to bottom, rgba(8,5,16,0.9) 0%, rgba(12,8,22,0.75) 100%);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .nav::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right,
+        transparent 0%, rgba(200,160,100,0.15) 15%, rgba(200,160,100,0.45) 40%,
+        rgba(220,180,120,0.55) 50%, rgba(200,160,100,0.45) 60%,
+        rgba(200,160,100,0.15) 85%, transparent 100%);
+    }
+    .nav::before {
+      content: ''; position: absolute; bottom: -3px; left: 15%; right: 15%; height: 1px;
+      background: linear-gradient(to right,
+        transparent 0%, rgba(200,160,100,0.08) 20%, rgba(200,160,100,0.2) 50%,
+        rgba(200,160,100,0.08) 80%, transparent 100%);
+    }
+
+    .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; margin-right: 36px; }
+    .logo-img { height: 72px; width: auto; display: block; }
+
+    .nav-center { position: relative; flex-shrink: 0; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.3); border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit; font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer; transition: all 0.22s; white-space: nowrap;
+    }
+    .dropdown-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.65); color: rgba(255,240,210,1); }
+    .dropdown-btn.open { background: rgba(200,160,100,0.12); border-color: rgba(220,180,120,0.8); color: #fff; border-radius: 6px 6px 0 0; }
+    .dropdown-btn .btn-diamond { font-size: 7px; color: rgba(200,160,100,0.6); }
+    .dropdown-btn:hover .btn-diamond, .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow { font-size: 8px; color: rgba(200,160,100,0.5); transition: transform 0.2s; margin-left: 2px; }
+    .dropdown-btn.open .arrow { transform: rotate(180deg); color: rgba(220,180,120,0.8); }
+
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0; min-width: 100%;
+      background: rgba(8,5,16,0.96); border: 1px solid rgba(200,160,100,0.35); border-top: none;
+      border-radius: 0 0 6px 6px; backdrop-filter: blur(24px);
+      overflow: hidden; opacity: 0; pointer-events: none;
+      transform: translateY(-4px); transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px; font-size: 13px; letter-spacing: 0.22em;
+      color: rgba(255,240,210,0.5); cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before { content: '◆'; margin-right: 8px; font-size: 5px; color: rgba(200,160,100,0.8); vertical-align: middle; }
+
+    /* 右侧头像 */
+    .nav-avatar-wrapper {
+      margin-left: auto;
+      position: relative;
+    }
+    
+    .nav-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(200,160,100,0.4);
+      cursor: pointer;
+      transition: all 0.22s;
+      object-fit: cover;
+    }
+    
+    .nav-avatar:hover {
+      border-color: rgba(220,180,120,0.8);
+      box-shadow: 0 0 12px rgba(200,160,100,0.3);
+    }
+    
+    .avatar-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 140px;
+      background: rgba(8,5,16,0.95);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-radius: 6px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    
+    .avatar-dropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    
+    .avatar-dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: rgba(255,240,210,0.6);
+      cursor: default;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    
+    .avatar-dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .avatar-dropdown-item.login-btn {
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+    }
+    
+    .avatar-dropdown-item.login-btn:hover {
+      color: rgba(255,240,210,0.95);
+      background: rgba(200,160,100,0.08);
+    }
+
+    /* ─── 主内容 ─── */
+    .main {
+      position: fixed; inset: 68px 0 0 0;
+      z-index: 100;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .section-header {
+      flex-shrink: 0;
+      padding: 28px 48px 20px;
+      display: flex; align-items: baseline; gap: 16px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .section-title {
+      font-size: 15px; letter-spacing: 0.45em;
+      color: rgba(255,240,210,0.65);
+    }
+    .section-count {
+      font-size: 12px; letter-spacing: 0.2em;
+      color: rgba(200,160,100,0.45);
+    }
+
+    /* 标题行返回按钮 */
+    .header-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      margin-left: auto;
+      border: 1px solid rgba(200,160,100,0.25);
+      border-radius: 20px;
+      background: rgba(16,12,24,0.4);
+      cursor: pointer;
+      transition: all 0.22s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    .header-back:hover {
+      border-color: rgba(220,180,120,0.6);
+      background: rgba(200,160,100,0.08);
+      transform: translateX(-2px);
+    }
+    
+    .header-back-icon {
+      font-size: 14px;
+      color: rgba(200,160,100,0.7);
+      transition: color 0.22s;
+    }
+    
+    .header-back:hover .header-back-icon {
+      color: rgba(220,180,120,0.95);
+    }
+    
+    .header-back-text {
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: rgba(255,240,210,0.6);
+      transition: color 0.22s;
+    }
+    
+    .header-back:hover .header-back-text {
+      color: rgba(255,240,210,0.95);
+    }
+
+    /* ─── 瀑布流滚动区 ─── */
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px 48px 80px;
+      /* 自定义滚动条 */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(200,160,100,0.25) transparent;
+    }
+    .scroll-area::-webkit-scrollbar { width: 4px; }
+    .scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .scroll-area::-webkit-scrollbar-thumb { background: rgba(200,160,100,0.25); border-radius: 2px; }
+
+    /* 瀑布流网格 —— 使用 Grid 实现等比例缩放 */
+    .waterfall {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 0;
+      width: 100%;
+      max-width: 100%;
+      padding: 0;
+    }
+    @media (min-width: 1920px) { .waterfall { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; } }
+    @media (min-width: 1600px) and (max-width: 1919px) { .waterfall { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; } }
+    @media (min-width: 1280px) and (max-width: 1599px) { .waterfall { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; } }
+    @media (min-width: 960px) and (max-width: 1279px) { .waterfall { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px; } }
+    @media (min-width: 640px) and (max-width: 959px) { .waterfall { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; } }
+    @media (max-width: 639px) { .waterfall { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; } }
+
+    /* ─── 角色卡片（9:16 竖版）─── */
+    .char-card {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid rgba(200,160,100,0.12);
+      background: rgba(16,12,24,0.8);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+      width: 100%;
+    }
+    /* 9:16 比例容器 */
+    .char-card-inner {
+      position: relative;
+      width: 100%;
+      padding-top: 177.78%; /* 9:16 = 100/56.25... 竖版 = 16/9*100 */
+      overflow: hidden;
+    }
+    .char-card-inner img,
+    .char-placeholder {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+    }
+
+    /* 占位背景 */
+    .char-placeholder {
+      display: flex; align-items: center; justify-content: center;
+    }
+    .char-glow {
+      position: absolute; top: 28%; left: 50%; transform: translate(-50%,-50%);
+      width: 80%; height: 50%;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .char-silhouette {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 55%; height: 65%;
+      border-radius: 32px 32px 0 0;
+      pointer-events: none;
+    }
+
+    /* 底部遮罩 */
+    .char-card-inner::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+      background: linear-gradient(to top, rgba(8,6,15,0.5) 0%, transparent 100%);
+      pointer-events: none; z-index: 2;
+    }
+
+    /* 悬浮效果 */
+    .char-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(200,160,100,0.4);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+    }
+
+    /* 已选中 */
+    .char-card.selected {
+      border-color: rgba(220,180,120,0.75);
+      box-shadow:
+        0 0 0 1px rgba(220,180,120,0.2),
+        0 0 24px rgba(200,160,100,0.18),
+        0 10px 32px rgba(0,0,0,0.6);
+    }
+    .char-card.selected::before {
+      content: '✦';
+      position: absolute; top: 10px; right: 12px;
+      font-size: 15px; color: rgba(220,180,120,0.95);
+      text-shadow: 0 0 8px rgba(220,180,120,0.7);
+      z-index: 10;
+      animation: starPulse 2s ease-in-out infinite;
+    }
+    @keyframes starPulse {
+      0%, 100% { opacity: 0.75; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* 未选中时其他卡片微暗 */
+    .waterfall.has-selection .char-card:not(.selected) {
+      opacity: 0.55;
+      filter: brightness(0.75);
+    }
+    .waterfall.has-selection .char-card:not(.selected):hover {
+      opacity: 0.85;
+      filter: brightness(0.9);
+      transform: translateY(-3px);
+    }
+
+
+
+    /* ─── 进度条 ─── */
+    .prog { position: fixed; bottom: 0; left: 0; right: 0; z-index: 300; height: 2px; background: rgba(255,255,255,0.04); }
+    .prog-fill { height: 100%; width: 44%; background: linear-gradient(to right, rgba(180,120,160,0.8), rgba(200,160,100,0.8)); }
+  </style>
+</head>
+<body>
+
+  <div class="bg">
+    <div class="bg-img" id="bgImg"></div>
+    <div class="bg-mask"></div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+
+    <div class="nav-center">
+      <div class="dropdown-btn" style="cursor:default;">
+        <span class="btn-diamond">◆</span>
+        <span>《逐风玉恋》</span>
+      </div>
+    </div>
+
+    <div class="nav-avatar-wrapper">
+      <img class="nav-avatar" id="avatarImg" src="assets/touxiang.png" alt="头像" />
+      <div class="avatar-dropdown" id="avatarDropdown">
+        <div class="avatar-dropdown-item" id="navStatusText">未登录</div>
+        <div class="avatar-dropdown-item login-btn" id="loginBtn">去登录</div>
+        <div class="avatar-dropdown-item logout-btn" id="logoutBtn" style="display:none;color:#e07070;">退出登录</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="section-header">
+      <span class="section-title">选择你的古风形象吧</span>
+      <span class="section-count" id="countLabel"></span>
+      <div class="header-back" id="headerBack">
+        <span class="header-back-icon">◁</span>
+        <span class="header-back-text">返回</span>
+      </div>
+    </div>
+
+    <div class="scroll-area">
+      <div class="waterfall" id="waterfall"></div>
+    </div>
+  </div>
+
+
+
+  <div class="prog"><div class="prog-fill"></div></div>
+
+  <!-- 退出登录确认弹窗 -->
+  <div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:360px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:36px 32px;font-family:'PingFang SC','Microsoft YaHei','STSong',serif;text-align:center;">
+      <div style="font-size:15px;color:rgba(255,240,210,0.9);letter-spacing:0.12em;line-height:1.8;margin-bottom:28px;">退出登录后您的记录将不再保留</div>
+      <div style="display:flex;gap:12px;">
+        <button onclick="document.getElementById('logoutModal').style.display='none'" style="flex:1;height:44px;background:rgba(255,255,255,0.05);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(200,160,100,0.8);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">取 消</button>
+        <button onclick="confirmLogout()" style="flex:1;height:44px;background:rgba(180,60,60,0.2);border:1px solid rgba(220,80,80,0.5);border-radius:6px;color:rgba(255,160,160,0.9);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">确认退出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 登录弹窗 -->
+  <div id="loginModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:420px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:40px 36px;position:relative;font-family:'PingFang SC','Microsoft YaHei','STSong',serif;">
+      <button onclick="document.getElementById('loginModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(200,160,100,0.6);font-size:20px;cursor:pointer;">×</button>
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:13px;color:rgba(200,160,100,0.6);letter-spacing:0.3em;margin-bottom:8px;">拾梦录</div>
+        <div style="font-size:20px;font-weight:300;color:rgba(255,240,210,0.95);letter-spacing:0.2em;">保存你的古风形象</div>
+        <div style="font-size:13px;color:rgba(200,160,100,0.5);letter-spacing:0.15em;margin-top:6px;">开启专属故事</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;gap:0;margin-bottom:10px;">
+          <input id="emailInput" type="email" placeholder="请输入邮箱地址" style="flex:1;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-right:none;border-radius:6px 0 0 6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+          <button id="codeBtn" onclick="sendCode()" style="width:110px;height:46px;background:rgba(200,160,100,0.12);border:1px solid rgba(200,160,100,0.3);border-radius:0 6px 6px 0;color:rgba(220,180,120,0.9);font-family:inherit;font-size:13px;cursor:pointer;white-space:nowrap;">获取验证码</button>
+        </div>
+        <input id="codeInput" type="text" placeholder="请输入验证码" maxlength="6" style="width:100%;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+      </div>
+      <div id="loginTip" style="font-size:12px;color:#e07070;letter-spacing:0.08em;margin-bottom:8px;min-height:18px;text-align:center;"></div>
+      <button id="loginSubmitBtn" onclick="doLogin()" style="width:100%;height:50px;background:linear-gradient(135deg,rgba(200,160,100,0.25),rgba(180,120,80,0.2));border:1px solid rgba(220,180,120,0.6);border-radius:6px;color:rgba(255,240,210,0.95);font-family:inherit;font-size:16px;letter-spacing:0.35em;cursor:pointer;">✦ 登 录 ✦</button>
+    </div>
+  </div>
+
+  <script>
+    /* ── 剧集数据 ── */
+    const dramas = [
+      { label: '《逐风玉恋》' },
+    ];
+
+    /* ── 角色数据（按剧集分组）──
+       img: 真实图片路径，留空时显示渐变占位
+       color: 占位主色  accent: 占位高光色 */
+    // ── 模板 URL 对照表（与 config.js 保持一致）──
+    const _TOS = 'https://cp-images.tos-cn-beijing.volces.com/zhuyu';
+    const _TPL = {
+      f: (n) => `${_TOS}/template_zhuyu_female_${n}.jpg`,
+      m: (n) => `${_TOS}/template_zhuyu_male_${n}.jpg`,
+    };
+
+    const charactersByDrama = {
+      0: [ // 逐风玉恋
+        { name: '云笙',  img: _TPL.f(1), color: '#2a1020', accent: '#c05878', templateUrl: _TPL.f(1) },
+        { name: '霜华',  img: _TPL.f(2), color: '#200c10', accent: '#c05050', templateUrl: _TPL.f(2) },
+        { name: '玉漓',  img: _TPL.f(3), color: '#1a0c24', accent: '#9060a8', templateUrl: _TPL.f(3) },
+        { name: '芙蕖',  img: _TPL.f(4), color: '#200810', accent: '#b84060', templateUrl: _TPL.f(4) },
+        { name: '月瑶',  img: _TPL.f(5), color: '#0c1810', accent: '#50a868', templateUrl: _TPL.f(5) },
+        { name: '烟罗',  img: _TPL.f(6), color: '#200c18', accent: '#c06888', templateUrl: _TPL.f(6) },
+        { name: '琴心',  img: _TPL.f(7), color: '#181008', accent: '#b87838', templateUrl: _TPL.f(7) },
+        { name: '逐风',  img: _TPL.m(1), color: '#0c1420', accent: '#5080c0', templateUrl: _TPL.m(1) },
+        { name: '玉衡',  img: _TPL.m(2), color: '#10180c', accent: '#608050', templateUrl: _TPL.m(2) },
+        { name: '寒璋',  img: _TPL.m(3), color: '#141020', accent: '#7060b0', templateUrl: _TPL.m(3) },
+        { name: '凌霄',  img: _TPL.m(4), color: '#0c1418', accent: '#407888', templateUrl: _TPL.m(4) },
+        { name: '墨渊',  img: _TPL.m(5), color: '#100c18', accent: '#886090', templateUrl: _TPL.m(5) },
+      ],
+    };
+
+    /* ── 状态 ── */
+    let curDrama   = 0;
+    let selectedIdx = -1;
+
+    const waterfall  = document.getElementById('waterfall');
+    const countLabel = document.getElementById('countLabel');
+    const avatarImg = document.getElementById('avatarImg');
+    const avatarDropdown = document.getElementById('avatarDropdown');
+    const loginBtn = document.getElementById('loginBtn');
+
+    /* ── 渲染瀑布流 ── */
+    function renderWaterfall() {
+      selectedIdx = -1;
+      waterfall.classList.remove('has-selection');
+      waterfall.innerHTML = '';
+
+      const chars = charactersByDrama[curDrama] || [];
+      countLabel.textContent = `共 ${chars.length} 位角色`;
+
+      chars.forEach((ch, i) => {
+        const card = document.createElement('div');
+        card.className = 'char-card';
+        card.dataset.index = i;
+
+        const inner = document.createElement('div');
+        inner.className = 'char-card-inner';
+
+        if (ch.img) {
+          // 真实图片（eager 避免 file:// 协议下懒加载不触发）
+          const img = document.createElement('img');
+          img.src = ch.img;
+          img.alt = ch.name;
+          img.loading = 'eager';
+          img.onerror = function() {
+            // 图片加载失败时，换成渐变色占位背景
+            this.style.display = 'none';
+            const ph = document.createElement('div');
+            ph.className = 'char-placeholder';
+            ph.style.background = `linear-gradient(170deg, ${ch.color} 0%, #08060f 100%)`;
+            const glow = document.createElement('div');
+            glow.className = 'char-glow';
+            glow.style.background = `radial-gradient(ellipse, ${ch.accent}2a 0%, transparent 70%)`;
+            ph.appendChild(glow);
+            inner.appendChild(ph);
+          };
+          inner.appendChild(img);
+        } else {
+          // 渐变占位
+          const ph = document.createElement('div');
+          ph.className = 'char-placeholder';
+          ph.style.background = `linear-gradient(170deg, ${ch.color} 0%, #08060f 100%)`;
+
+          const glow = document.createElement('div');
+          glow.className = 'char-glow';
+          glow.style.background = `radial-gradient(ellipse, ${ch.accent}2a 0%, transparent 70%)`;
+          ph.appendChild(glow);
+
+          const sil = document.createElement('div');
+          sil.className = 'char-silhouette';
+          sil.style.background = `linear-gradient(to top, ${ch.accent}1a 0%, ${ch.accent}08 50%, transparent 100%)`;
+          ph.appendChild(sil);
+
+          inner.appendChild(ph);
+        }
+
+        card.appendChild(inner);
+
+        card.addEventListener('click', () => {
+          // 取消原选中
+          waterfall.querySelectorAll('.char-card.selected').forEach(el => el.classList.remove('selected'));
+          card.classList.add('selected');
+          waterfall.classList.add('has-selection');
+          selectedIdx = i;
+          
+          const chars = charactersByDrama[curDrama] || [];
+          const ch = chars[selectedIdx];
+          if (ch) {
+            localStorage.setItem('selectedCharacter', selectedIdx);
+            localStorage.setItem('selectedCharacterName', ch.name);
+            // 存入对应的 Dify 模板 URL，供 step4.html 生成同人图时使用
+            localStorage.setItem('selectedTemplateUrl', ch.templateUrl || '');
+            window.location.href = 'step3.html';
+          }
+        });
+
+        waterfall.appendChild(card);
+      });
+    }
+
+    localStorage.setItem('selectedDrama', JSON.stringify(dramas[0]));
+    localStorage.setItem('selectedDramaIndex', 0);
+
+    /* ── 返回按钮 ── */
+    const headerBack = document.getElementById('headerBack');
+    headerBack.addEventListener('click', () => {
+      window.location.href = 'step1.html';
+    });
+
+    /* ── 头像下拉菜单 ── */
+    function updateNavLoginState() {
+      const loggedIn = !!(localStorage.getItem('isLoggedIn') && localStorage.getItem('userEmail'));
+      const email = localStorage.getItem('userEmail') || '';
+      document.getElementById('navStatusText').textContent = loggedIn ? email : '未登录';
+      loginBtn.style.display = loggedIn ? 'none' : '';
+      document.getElementById('logoutBtn').style.display = loggedIn ? '' : 'none';
+    }
+    updateNavLoginState();
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      avatarDropdown.classList.remove('open');
+      document.getElementById('logoutModal').style.display = 'flex';
+    });
+
+    function confirmLogout() {
+      localStorage.clear();
+      window.location.href = 'step1.html';
+    }
+
+    avatarImg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      avatarDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', () => {
+      avatarDropdown.classList.remove('open');
+    });
+
+    loginBtn.addEventListener('click', () => {
+      document.getElementById('loginModal').style.display = 'flex';
+    });
+
+    /* ── 初始化 ── */
+    renderWaterfall();
+  </script>
+<script>
+    async function sendCode() {
+      const email = document.getElementById("emailInput").value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById("loginTip").textContent = "请输入正确的邮箱地址"; return; }
+      const btn = document.getElementById("codeBtn");
+      btn.disabled = true; document.getElementById("loginTip").textContent = "";
+      try {
+        const r = await fetch("/api/send-email-code", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+        const d = await r.json();
+        if (!r.ok) { document.getElementById("loginTip").textContent = d.error||"发送失败"; btn.disabled=false; return; }
+        let t=60; btn.textContent=t+"s";
+        const ti=setInterval(()=>{ t--; btn.textContent=t+"s"; if(t<=0){clearInterval(ti);btn.disabled=false;btn.textContent="获取验证码";}},1000);
+      } catch(e){ document.getElementById("loginTip").textContent="网络错误"; btn.disabled=false; }
+    }
+    async function doLogin() {
+      const email=document.getElementById("emailInput").value.trim();
+      const code=document.getElementById("codeInput").value.trim();
+      if(!email||!code){document.getElementById("loginTip").textContent="请填写邮箱和验证码";return;}
+      const btn=document.getElementById("loginSubmitBtn");
+      btn.disabled=true; btn.textContent="验证中";
+      try {
+        const r=await fetch("/api/verify-email-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
+        const d=await r.json();
+        if(!r.ok){document.getElementById("loginTip").textContent=d.error||"验证失败";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";return;}
+        localStorage.setItem("isLoggedIn","true"); localStorage.setItem("userEmail",email);
+        updateNavLoginState();
+        document.getElementById("loginModal").style.display="none";
+      } catch(e){document.getElementById("loginTip").textContent="网络错误";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";}
+    }
+  </script>
+</body>
+</html>

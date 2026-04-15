@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾梦录 · 同人文</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+      color: rgba(255,240,210,0.9);
+    }
+
+    /* ── 导航栏 ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(to bottom, rgba(8,5,16,0.92) 0%, rgba(12,8,22,0.78) 100%);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .nav::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.15) 15%, rgba(200,160,100,0.45) 40%, rgba(220,180,120,0.55) 50%, rgba(200,160,100,0.45) 60%, rgba(200,160,100,0.15) 85%, transparent 100%);
+    }
+    .nav::before {
+      content: ''; position: absolute; bottom: -3px; left: 15%; right: 15%; height: 1px;
+      background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.08) 20%, rgba(200,160,100,0.2) 50%, rgba(200,160,100,0.08) 80%, transparent 100%);
+    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; margin-right: 36px; }
+    .logo-img { height: 72px; width: auto; display: block; }
+    .nav-center { position: relative; flex-shrink: 0; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.3); border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit; font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer; transition: all 0.22s; white-space: nowrap;
+    }
+    .dropdown-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.65); color: rgba(255,240,210,1); }
+    .dropdown-btn.open { background: rgba(200,160,100,0.12); border-color: rgba(220,180,120,0.8); color: #fff; border-radius: 6px 6px 0 0; }
+    .dropdown-btn .btn-diamond { font-size: 7px; color: rgba(200,160,100,0.6); }
+    .dropdown-btn:hover .btn-diamond, .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow { font-size: 8px; color: rgba(200,160,100,0.5); transition: transform 0.2s; margin-left: 2px; }
+    .dropdown-btn.open .arrow { transform: rotate(180deg); color: rgba(220,180,120,0.8); }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0; min-width: 100%;
+      background: rgba(8,5,16,0.95); border: 1px solid rgba(200,160,100,0.35); border-top: none;
+      border-radius: 0 0 6px 6px; backdrop-filter: blur(24px);
+      overflow: hidden; opacity: 0; pointer-events: none;
+      transform: translateY(-4px); transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px; font-size: 13px; letter-spacing: 0.22em;
+      color: rgba(255,240,210,0.5); cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before { content: '◆'; margin-right: 8px; font-size: 5px; color: rgba(200,160,100,0.8); vertical-align: middle; }
+
+    .nav-right {
+      margin-left: auto; display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .nav-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid rgba(220,180,120,0.8);
+      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-login-text { font-size: 13px; letter-spacing: 0.15em; color: rgba(200,160,100,0.7); white-space: nowrap; }
+
+    /* ── 主内容区 ── */
+    .page {
+      position: fixed; inset: 68px 0 0 0;
+      display: flex; flex-direction: column;
+      padding: 40px 80px 32px;
+      overflow: hidden;
+    }
+
+    /* 顶部：缩略图 + 标题 + 图标 */
+    .novel-header {
+      display: flex; align-items: center; gap: 20px;
+      margin-bottom: 28px; flex-shrink: 0;
+    }
+    .novel-thumb {
+      width: 64px; height: 86px; flex-shrink: 0;
+      border-radius: 6px; overflow: hidden;
+      border: 1px solid rgba(200,160,100,0.3);
+      background: rgba(255,255,255,0.04);
+    }
+    .novel-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .novel-header-info { flex: 1; }
+    .novel-title {
+      font-size: 20px; font-weight: 600; letter-spacing: 0.2em;
+      color: rgba(255,240,210,0.95);
+      margin-bottom: 6px;
+    }
+    .novel-title .diamond { font-size: 9px; color: rgba(200,160,100,0.8); margin: 0 6px; }
+    .novel-meta {
+      font-size: 13px; letter-spacing: 0.2em;
+      color: rgba(255,240,210,0.4);
+    }
+    .novel-meta .meta-dot { margin: 0 8px; color: rgba(200,160,100,0.3); }
+
+    .icon-btns {
+      display: flex; gap: 10px; flex-shrink: 0; align-self: flex-start;
+      margin-top: 4px;
+    }
+    .icon-btn {
+      width: 38px; height: 38px;
+      border: 1px solid rgba(200,160,100,0.25);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      color: rgba(200,160,100,0.6);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px;
+      transition: all 0.2s;
+    }
+    .icon-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.5); color: rgba(200,160,100,0.9); }
+    .icon-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* 分割线 */
+    .header-divider {
+      height: 1px; flex-shrink: 0; margin-bottom: 24px;
+      background: linear-gradient(to right, transparent, rgba(200,160,100,0.25), transparent);
+    }
+
+    /* 正文区 */
+    .novel-body-wrap {
+      flex: 1; position: relative; overflow: hidden;
+      min-height: 0;
+    }
+    .novel-body {
+      position: absolute; inset: 0;
+      overflow-y: auto;
+      padding-right: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(200,160,100,0.2) transparent;
+    }
+    .novel-body::-webkit-scrollbar { width: 4px; }
+    .novel-body::-webkit-scrollbar-track { background: transparent; }
+    .novel-body::-webkit-scrollbar-thumb { background: rgba(200,160,100,0.2); border-radius: 2px; }
+
+    .novel-text {
+      font-size: 15px; line-height: 2.2; letter-spacing: 0.12em;
+      color: rgba(255,240,210,0.75);
+      white-space: pre-wrap;
+      padding-bottom: 1.2em;
+    }
+    .novel-end-tip {
+      text-align: center;
+      font-size: 13px; letter-spacing: 0.4em;
+      color: rgba(200,160,100,0.45);
+      padding: 1.2em 0 3em;
+    }
+
+    /* 渐隐遮罩 — 滚动到底部时显示 */
+    .novel-fade-mask {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 60px; pointer-events: none;
+      opacity: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(8,6,15,0.85) 80%,
+        rgba(8,6,15,0.97) 100%
+      );
+      transition: opacity 0.4s ease;
+    }
+    .novel-fade-mask.visible { opacity: 1; }
+    .novel-fade-mask.hidden { opacity: 0; }
+
+    /* 底部按钮区 */
+    .bottom-btns {
+      display: flex; gap: 16px; flex-shrink: 0;
+      padding-top: 20px;
+    }
+    .unlock-btn {
+      flex: 1; height: 52px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.85) 0%, rgba(180,130,70,0.85) 100%);
+      border: none; border-radius: 8px;
+      color: rgba(8,6,15,0.95); font-family: inherit;
+      font-size: 16px; letter-spacing: 0.25em; font-weight: 600;
+      cursor: pointer; transition: all 0.25s;
+    }
+    .unlock-btn:hover {
+      background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95));
+      box-shadow: 0 4px 24px rgba(200,160,100,0.4);
+      transform: translateY(-1px);
+    }
+    .unlock-btn.unlocked {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,160,100,0.2);
+      color: rgba(255,240,210,0.35);
+      cursor: not-allowed;
+      letter-spacing: 0.18em;
+      font-size: 14px;
+    }
+    .unlock-btn.unlocked:hover {
+      background: rgba(255,255,255,0.04);
+      box-shadow: none;
+      transform: none;
+    }
+    .cp-btn {
+      flex: 1; height: 52px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-radius: 8px;
+      color: rgba(255,240,210,0.8); font-family: inherit;
+      font-size: 15px; letter-spacing: 0.2em;
+      cursor: pointer; transition: all 0.25s;
+    }
+    .cp-btn:hover {
+      background: rgba(200,160,100,0.08);
+      border-color: rgba(200,160,100,0.65);
+      color: rgba(255,240,210,1);
+    }
+
+    /* ── 登录弹窗 ── */
+    .login-modal {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .login-card {
+      width: 420px;
+      background: rgba(12,8,22,0.96);
+      border: 1px solid rgba(200,160,100,0.3);
+      border-radius: 16px; padding: 48px 44px 44px; position: relative;
+    }
+    .login-close {
+      position: absolute; top: 18px; right: 22px;
+      font-size: 20px; color: rgba(255,240,210,0.35);
+      cursor: pointer; transition: color 0.2s; line-height: 1;
+    }
+    .login-close:hover { color: rgba(255,240,210,0.8); }
+    .login-title { font-size: 20px; letter-spacing: 0.3em; font-weight: 600; color: rgba(255,240,210,0.95); text-align: center; margin-bottom: 6px; }
+    .login-subtitle { font-size: 12px; letter-spacing: 0.2em; color: rgba(200,160,100,0.5); text-align: center; margin-bottom: 32px; }
+    .login-divider { height: 1px; margin-bottom: 28px; background: linear-gradient(to right, transparent, rgba(200,160,100,0.25), transparent); }
+    .login-field { margin-bottom: 16px; }
+    .login-field input {
+      width: 100%; height: 46px; padding: 0 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.2);
+      border-radius: 8px; color: rgba(255,240,210,0.9); font-family: inherit;
+      font-size: 14px; letter-spacing: 0.08em; outline: none; transition: border-color 0.2s;
+    }
+    .login-field input:focus { border-color: rgba(200,160,100,0.55); }
+    .login-field input::placeholder { color: rgba(255,240,210,0.22); }
+    .login-code-row { display: flex; gap: 10px; }
+    .login-code-row input { flex: 1; }
+    .send-code-btn {
+      flex-shrink: 0; height: 46px; padding: 0 16px;
+      background: rgba(200,160,100,0.12); border: 1px solid rgba(200,160,100,0.35);
+      border-radius: 8px; color: rgba(200,160,100,0.85); font-family: inherit;
+      font-size: 13px; letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .send-code-btn:hover { background: rgba(200,160,100,0.2); }
+    .login-btn {
+      width: 100%; height: 48px; margin-top: 8px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.85), rgba(180,130,70,0.85));
+      border: none; border-radius: 8px;
+      color: rgba(8,6,15,0.9); font-family: inherit;
+      font-size: 16px; letter-spacing: 0.3em; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .login-btn:hover { background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95)); }
+    .login-or { text-align: center; font-size: 12px; color: rgba(255,240,210,0.2); letter-spacing: 0.2em; margin: 20px 0; }
+    .wechat-btn {
+      width: 100%; height: 46px;
+      background: rgba(7,193,96,0.12); border: 1px solid rgba(7,193,96,0.3);
+      border-radius: 8px; color: rgba(7,193,96,0.85); font-family: inherit;
+      font-size: 14px; letter-spacing: 0.2em; cursor: pointer; transition: all 0.2s;
+    }
+    .wechat-btn:hover { background: rgba(7,193,96,0.2); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+    <div class="nav-right" id="navRight">
+      <div class="nav-avatar">
+        <img src="" alt="头像" id="avatarImg" />
+      </div>
+      <span class="nav-login-text" id="navLoginText"></span>
+    </div>
+  </nav>
+
+  <div class="page">
+    <!-- 顶部标题行 -->
+    <div class="novel-header">
+      <div class="novel-thumb">
+        <img id="thumbImg" src="" alt="" />
+      </div>
+      <div class="novel-header-info">
+        <div class="novel-title">
+          <span class="diamond">✦</span>
+          <span id="novelTitleText">云笙传</span>
+          <span class="diamond">✦</span>
+        </div>
+        <div class="novel-meta">
+          <span id="dramaLabel">《长相思》</span>
+          <span class="meta-dot">·</span>
+          <span id="flowerNameMeta">云笙</span>
+          <span class="meta-dot">·</span>
+          <span id="relationMeta">竹马</span>
+          <span class="meta-dot">·</span>
+          <span id="plotMeta">甜宠</span>
+        </div>
+      </div>
+      <div class="icon-btns">
+        <div class="icon-btn disabled" id="copyBtn" title="复制全文">⎘</div>
+        <div class="icon-btn disabled" id="shareBtn" title="分享">↗</div>
+        <div class="icon-btn disabled" id="downloadBtn" title="下载">↓</div>
+      </div>
+    </div>
+
+    <div class="header-divider"></div>
+
+    <!-- 正文区 -->
+    <div class="novel-body-wrap">
+      <div class="novel-body" id="novelBody">
+        <div class="novel-text" id="novelText"></div>
+        <div class="novel-end-tip">· 未完待续 ·</div>
+      </div>
+      <div class="novel-fade-mask" id="fadeMask"></div>
+    </div>
+
+    <!-- 底部按钮 -->
+    <div class="bottom-btns">
+      <button class="unlock-btn" id="unlockBtn">0.2￥解锁下一章</button>
+      <button class="cp-btn" id="cpBtn">继续生成 CP 合照 →</button>
+    </div>
+  </div>
+
+  <!-- 登录弹窗 -->
+  <div class="login-modal" id="loginModal">
+    <div class="login-card">
+      <span class="login-close" id="loginClose">✕</span>
+      <div class="login-title">登录拾梦录</div>
+      <div class="login-subtitle">✦ 解锁完整古风体验 ✦</div>
+      <div class="login-divider"></div>
+      <div class="login-field">
+        <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" />
+      </div>
+      <div class="login-field">
+        <div class="login-code-row">
+          <input type="text" id="codeInput" placeholder="请输入验证码" maxlength="6" />
+          <button class="send-code-btn" id="sendCodeBtn" onclick="sendCode()">获取验证码</button>
+        </div>
+      </div>
+      <button class="login-btn" onclick="doLogin()">登 录</button>
+      <div class="login-or">— 或 —</div>
+      <button class="wechat-btn">微信一键登录</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const dramas = ['《逐风玉恋》'];
+
+    const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
+    const novel = localStorage.getItem('generatedNovel') || '月色如水，洒落在庭院的青石板上。云笙倚在回廊的朱红柱旁，手中把玩着一枚玉佩，那是他送的定情之物。\n\n微风拂过，带来淡淡的桂花香。她抬眸望向远方，那人的身影却迟迟未现……\n\n（此处为演示文本，实际内容由 AI 生成）';
+    const novelTitle = localStorage.getItem('generatedNovelTitle') || '云笙传';
+    const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
+    const relationship = localStorage.getItem('novelRelationship') || '竹马';
+    const plotDir = localStorage.getItem('novelPlotDirection') || '甜宠';
+    const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
+    let isUnlocked = !!localStorage.getItem('novelUnlocked');
+    let curDrama = dramaIndex;
+
+    // 填充内容
+    document.getElementById('thumbImg').src = generatedImage;
+    document.getElementById('novelText').textContent = novel;
+    document.getElementById('novelTitleText').textContent = novelTitle;
+    document.getElementById('flowerNameMeta').textContent = flowerName;
+    document.getElementById('relationMeta').textContent = relationship;
+    document.getElementById('plotMeta').textContent = plotDir;
+    document.getElementById('dramaLabel').textContent = dramas[dramaIndex] || dramas[0];
+
+    // 头像
+    const userPhoto = localStorage.getItem('userPhoto');
+    if (isLoggedIn && userPhoto) { document.getElementById('avatarImg').src = userPhoto; }
+    else { document.getElementById('avatarImg').src = 'assets/touxiang.png'; }
+    document.getElementById('navLoginText').textContent = isLoggedIn ? '' : '未登录';
+
+    // 未登录点击
+    document.getElementById('navRight').addEventListener('click', () => {
+      if (!isLoggedIn) document.getElementById('loginModal').style.display = 'flex';
+    });
+
+    // 导航下拉
+    const dropBtn = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel = document.getElementById('dropLabel');
+    const items = document.querySelectorAll('.dropdown-item');
+    // dropLabel固定显示IP剧集
+    items.forEach((x, j) => x.classList.toggle('on', j === curDrama));
+    dropBtn.addEventListener('click', e => { e.stopPropagation(); const o = dropMenu.classList.toggle('open'); dropBtn.classList.toggle('open', o); });
+    document.addEventListener('click', () => { dropMenu.classList.remove('open'); dropBtn.classList.remove('open'); });
+    items.forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation(); const i = +el.dataset.i;
+        localStorage.setItem('selectedDramaIndex', i);
+        localStorage.setItem('selectedDrama', JSON.stringify({ label: dramas[i] }));
+        window.location.href = 'step2.html';
+      });
+    });
+
+    // 滚动监听：接近底部时显示渐隐遮罩
+    const novelBody = document.getElementById('novelBody');
+    const fadeMask  = document.getElementById('fadeMask');
+    function updateMask() {
+      const distToBottom = novelBody.scrollHeight - novelBody.scrollTop - novelBody.clientHeight;
+      if (distToBottom < 180) {
+        fadeMask.classList.add('visible');
+      } else {
+        fadeMask.classList.remove('visible');
+      }
+    }
+    novelBody.addEventListener('scroll', updateMask);
+    // 内容渲染后立即判断一次（内容较短时直接显示）
+    setTimeout(updateMask, 100);
+
+    // 解锁态（保留渐隐遮罩，换成"下一章锁定"样式）
+    function applyUnlocked() {
+      document.getElementById('unlockBtn').textContent = '0.2￥解锁下一章';
+      document.getElementById('unlockBtn').classList.add('unlocked');
+      ['copyBtn', 'shareBtn', 'downloadBtn'].forEach(id => {
+        document.getElementById(id).classList.remove('disabled');
+      });
+    }
+    if (isUnlocked) applyUnlocked();
+
+    // 解锁按钮
+    document.getElementById('unlockBtn').addEventListener('click', () => {
+      if (isUnlocked) return;
+      // 演示：直接解锁（实际接入支付）
+      localStorage.setItem('novelUnlocked', '1');
+      isUnlocked = true;
+      applyUnlocked();
+    });
+
+    // CP 合照
+    document.getElementById('cpBtn').addEventListener('click', () => {
+      window.location.href = 'step6_cp.html';
+    });
+
+    // 图标按钮
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      if (document.getElementById('copyBtn').classList.contains('disabled')) return;
+      navigator.clipboard.writeText(novel).then(() => alert('已复制到剪贴板'));
+    });
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      if (document.getElementById('downloadBtn').classList.contains('disabled')) return;
+      const a = document.createElement('a');
+      a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(novelTitle + '\n\n' + novel);
+      a.download = novelTitle + '.txt';
+      a.click();
+    });
+
+    // 登录弹窗
+    document.getElementById('loginClose').addEventListener('click', () => { document.getElementById('loginModal').style.display = 'none'; });
+    document.getElementById('loginModal').addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
+
+    let codeTimer = 0;
+    function sendCode() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      if (!/^1[3-9]\d{9}$/.test(phone)) { alert('请输入正确的手机号'); return; }
+      if (codeTimer > 0) return;
+      const btn = document.getElementById('sendCodeBtn');
+      codeTimer = 60; btn.disabled = true;
+      const t = setInterval(() => { codeTimer--; btn.textContent = codeTimer + 's后重试'; if (codeTimer <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = '获取验证码'; } }, 1000);
+      alert('验证码已发送（演示）');
+    }
+    function doLogin() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      const code = document.getElementById('codeInput').value.trim();
+      if (!phone || !code) { alert('请填写手机号和验证码'); return; }
+      // legacy phone login removed
+      document.getElementById('loginModal').style.display = 'none';
+      location.reload();
+    }
+  </script>
+
+<script>
+    async function sendCode() {
+      const email = document.getElementById("emailInput").value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById("loginTip").textContent = "请输入正确的邮箱地址"; return; }
+      const btn = document.getElementById("codeBtn");
+      btn.disabled = true; document.getElementById("loginTip").textContent = "";
+      try {
+        const r = await fetch("/api/send-email-code", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+        const d = await r.json();
+        if (!r.ok) { document.getElementById("loginTip").textContent = d.error||"发送失败"; btn.disabled=false; return; }
+        let t=60; btn.textContent=t+"s";
+        const ti=setInterval(()=>{ t--; btn.textContent=t+"s"; if(t<=0){clearInterval(ti);btn.disabled=false;btn.textContent="获取验证码";}},1000);
+      } catch(e){ document.getElementById("loginTip").textContent="网络错误"; btn.disabled=false; }
+    }
+    async function doLogin() {
+      const email=document.getElementById("emailInput").value.trim();
+      const code=document.getElementById("codeInput").value.trim();
+      if(!email||!code){document.getElementById("loginTip").textContent="请填写邮箱和验证码";return;}
+      const btn=document.getElementById("loginSubmitBtn");
+      btn.disabled=true; btn.textContent="验证中";
+      try {
+        const r=await fetch("/api/verify-email-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
+        const d=await r.json();
+        if(!r.ok){document.getElementById("loginTip").textContent=d.error||"验证失败";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";return;}
+        localStorage.setItem("isLoggedIn","true"); localStorage.setItem("userEmail",email);
+        document.getElementById("loginModal").style.display="none";
+      } catch(e){document.getElementById("loginTip").textContent="网络错误";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";}
+    }
+  </script>
+</body>
+</html>

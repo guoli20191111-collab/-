@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾梦录 · 生成 CP 合照</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+      color: rgba(255,240,210,0.9);
+    }
+
+    /* ── 导航栏 ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(to bottom, rgba(8,5,16,0.92) 0%, rgba(12,8,22,0.78) 100%);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .nav::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.15) 15%, rgba(200,160,100,0.45) 40%, rgba(220,180,120,0.55) 50%, rgba(200,160,100,0.45) 60%, rgba(200,160,100,0.15) 85%, transparent 100%);
+    }
+    .nav::before {
+      content: ''; position: absolute; bottom: -3px; left: 15%; right: 15%; height: 1px;
+      background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.08) 20%, rgba(200,160,100,0.2) 50%, rgba(200,160,100,0.08) 80%, transparent 100%);
+    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; margin-right: 36px; }
+    .logo-img { height: 72px; width: auto; display: block; }
+    .nav-center { position: relative; flex-shrink: 0; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.3); border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit; font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer; transition: all 0.22s; white-space: nowrap;
+    }
+    .dropdown-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.65); color: rgba(255,240,210,1); }
+    .dropdown-btn.open { background: rgba(200,160,100,0.12); border-color: rgba(220,180,120,0.8); color: #fff; border-radius: 6px 6px 0 0; }
+    .dropdown-btn .btn-diamond { font-size: 7px; color: rgba(200,160,100,0.6); }
+    .dropdown-btn:hover .btn-diamond, .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow { font-size: 8px; color: rgba(200,160,100,0.5); transition: transform 0.2s; margin-left: 2px; }
+    .dropdown-btn.open .arrow { transform: rotate(180deg); color: rgba(220,180,120,0.8); }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0; min-width: 100%;
+      background: rgba(8,5,16,0.95); border: 1px solid rgba(200,160,100,0.35); border-top: none;
+      border-radius: 0 0 6px 6px; backdrop-filter: blur(24px);
+      overflow: hidden; opacity: 0; pointer-events: none;
+      transform: translateY(-4px); transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px; font-size: 13px; letter-spacing: 0.22em;
+      color: rgba(255,240,210,0.5); cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before { content: '◆'; margin-right: 8px; font-size: 5px; color: rgba(200,160,100,0.8); vertical-align: middle; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .nav-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(220,180,120,0.8); background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-login-text { font-size: 13px; letter-spacing: 0.15em; color: rgba(200,160,100,0.7); white-space: nowrap; }
+
+    /* ── 主布局 ── */
+    .page {
+      position: fixed; inset: 68px 0 0 0;
+      display: flex; flex-direction: column;
+      padding: 28px 48px 24px;
+    }
+
+    /* 步骤标题 */
+    .step-title {
+      text-align: center; flex-shrink: 0;
+      font-size: 16px; letter-spacing: 0.4em;
+      color: rgba(255,240,210,0.7);
+      margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .step-title .diamond { font-size: 8px; color: rgba(200,160,100,0.7); }
+
+    /* 对称区 */
+    .cp-stage {
+      flex: 1; min-height: 0;
+      display: flex; align-items: stretch;
+      gap: 0; position: relative;
+    }
+
+    /* 我的形象 */
+    .my-side, .ta-side {
+      flex: 1; position: relative; overflow: hidden;
+    }
+    .side-img-wrap {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(8,6,15,0.95);
+    }
+    .side-img-wrap img { height: 100%; width: auto; max-width: 100%; object-fit: contain; position: relative; z-index: 1; }
+
+    /* 侧标签 */
+    .side-label {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      z-index: 5; padding: 4px 16px; border-radius: 4px;
+      font-size: 12px; letter-spacing: 0.2em;
+      background: rgba(8,6,15,0.7); border: 1px solid rgba(200,160,100,0.2);
+      color: rgba(200,160,100,0.7);
+    }
+
+    /* 空态占位 */
+    .ta-empty {
+      position: absolute; inset: 0; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+      background: rgba(8,6,15,0.95);
+    }
+    .ta-empty .empty-silhouette {
+      width: 80px; height: 100px;
+      border: 2px dashed rgba(200,160,100,0.25);
+      border-radius: 40px 40px 20px 20px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ta-empty .empty-silhouette::before {
+      content: '';
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px dashed rgba(200,160,100,0.25);
+      position: absolute; top: 12px;
+    }
+    .ta-empty .empty-silhouette::after {
+      content: '?';
+      position: absolute; bottom: 14px;
+      font-size: 20px; font-weight: 300;
+      color: rgba(200,160,100,0.3);
+    }
+    .ta-empty .empty-text {
+      font-size: 14px; letter-spacing: 0.25em;
+      color: rgba(200,160,100,0.4);
+    }
+    .ta-empty .empty-hint {
+      font-size: 11px; letter-spacing: 0.15em;
+      color: rgba(255,240,210,0.2);
+    }
+    .ta-empty.hidden { display: none; }
+
+    /* 中间心电图动效 */
+    .cp-center {
+      width: 110px; flex-shrink: 0;
+      margin: 0 -28px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 10;
+    }
+    .heartbeat-wrap {
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+    .heartbeat-svg {
+      width: 100%; flex: 1;
+      overflow: visible;
+    }
+    .heartbeat-line {
+      fill: none;
+      stroke: rgba(200,160,100,0.6);
+      stroke-width: 0.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 200;
+      stroke-dashoffset: 200;
+      animation: drawHeartbeat 2s ease-in-out infinite;
+    }
+    .heartbeat-glow { display: none; }
+    @keyframes drawHeartbeat {
+      0% { stroke-dashoffset: 200; }
+      50% { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: -200; }
+    }
+    .heart-icon {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      color: rgba(200,160,100,0.7);
+      text-shadow: 0 0 12px rgba(200,160,100,0.4);
+      animation: heartPulse 2s ease-in-out infinite;
+      z-index: 3;
+    }
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .heartbeat-svg.bottom { display: none; }
+
+    /* CP 候选 */
+    .cp-candidates {
+      flex-shrink: 0; margin-top: 16px;
+      overflow-x: auto; overflow-y: hidden;
+      scrollbar-width: none;
+      display: flex; gap: 12px;
+      padding: 4px 2px;
+    }
+    .cp-candidates::-webkit-scrollbar { display: none; }
+    .cp-card {
+      flex-shrink: 0;
+      width: 70px; height: 94px;
+      border-radius: 6px; overflow: hidden;
+      border: 1.5px solid rgba(200,160,100,0.2);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer; transition: all 0.2s;
+      position: relative;
+    }
+    .cp-card img { width: 100%; height: 100%; object-fit: cover; }
+    .cp-card:hover { border-color: rgba(200,160,100,0.55); }
+    .cp-card.selected {
+      border-color: rgba(220,180,120,0.9);
+      box-shadow: 0 0 14px rgba(200,160,100,0.3);
+    }
+    .cp-card .card-check {
+      position: absolute; top: 4px; right: 5px;
+      font-size: 7px; color: rgba(200,160,100,0.9);
+      opacity: 0; transition: opacity 0.2s;
+      text-shadow: 0 0 4px rgba(0,0,0,0.8);
+    }
+    .cp-card.selected .card-check { opacity: 1; }
+    .cp-card-name {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 3px 0; text-align: center;
+      font-size: 10px; letter-spacing: 0.1em; color: rgba(255,240,210,0.8);
+      background: linear-gradient(to top, rgba(8,6,15,0.85) 0%, transparent 100%);
+    }
+
+    /* 生成按钮 */
+    .gen-row { flex-shrink: 0; display: flex; justify-content: center; margin-top: 16px; }
+    .gen-btn {
+      width: 320px; height: 52px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.85) 0%, rgba(180,130,70,0.85) 100%);
+      border: none; border-radius: 8px;
+      color: rgba(8,6,15,0.95); font-family: inherit;
+      font-size: 16px; letter-spacing: 0.3em; font-weight: 600;
+      cursor: pointer; transition: all 0.25s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .gen-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(220,180,120,0.95) 0%, rgba(200,155,85,0.95) 100%);
+      box-shadow: 0 4px 24px rgba(200,160,100,0.4);
+      transform: translateY(-1px);
+    }
+    .gen-btn:disabled { background: rgba(200,160,100,0.2); color: rgba(255,240,210,0.3); cursor: not-allowed; }
+
+    /* 等待态 */
+    .waiting-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(8,6,15,0.92);
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    .waiting-overlay.show { display: flex; }
+    .ink-animation { position: relative; width: 200px; height: 200px; margin-bottom: 48px; }
+    .ink-circle { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); border-radius: 50%; opacity: 0; animation: inkPulse 3s ease-in-out infinite; }
+    .ink-circle:nth-child(1) { width: 200px; height: 200px; background: radial-gradient(circle, rgba(200,160,100,0.15) 0%, transparent 70%); animation-delay: 0s; }
+    .ink-circle:nth-child(2) { width: 150px; height: 150px; background: radial-gradient(circle, rgba(180,120,160,0.2) 0%, transparent 70%); animation-delay: 0.6s; }
+    .ink-circle:nth-child(3) { width: 100px; height: 100px; background: radial-gradient(circle, rgba(200,160,100,0.3) 0%, transparent 70%); animation-delay: 1.2s; }
+    .ink-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(220,180,120,0.3) 0%, transparent 100%); animation: inkRotate 8s linear infinite; }
+    @keyframes inkPulse { 0% { opacity: 0; transform: translate(-50%,-50%) scale(0.3); } 50% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.2); } }
+    @keyframes inkRotate { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+    .waiting-text { font-size: 18px; letter-spacing: 0.4em; color: rgba(255,240,210,0.85); text-align: center; display: flex; align-items: center; gap: 12px; animation: textFade 2s ease-in-out infinite; }
+    .waiting-text .diamond { font-size: 10px; color: rgba(200,160,100,0.7); }
+    @keyframes textFade { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+    .waiting-hint { margin-top: 16px; font-size: 13px; letter-spacing: 0.3em; color: rgba(255,240,210,0.4); text-align: center; }
+
+    /* 登录弹窗 */
+    .login-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+    .login-card { width: 420px; background: rgba(12,8,22,0.96); border: 1px solid rgba(200,160,100,0.3); border-radius: 16px; padding: 48px 44px 44px; position: relative; }
+    .login-close { position: absolute; top: 18px; right: 22px; font-size: 20px; color: rgba(255,240,210,0.35); cursor: pointer; transition: color 0.2s; line-height: 1; }
+    .login-close:hover { color: rgba(255,240,210,0.8); }
+    .login-title { font-size: 20px; letter-spacing: 0.3em; font-weight: 600; color: rgba(255,240,210,0.95); text-align: center; margin-bottom: 6px; }
+    .login-subtitle { font-size: 12px; letter-spacing: 0.2em; color: rgba(200,160,100,0.5); text-align: center; margin-bottom: 32px; }
+    .login-divider { height: 1px; margin-bottom: 28px; background: linear-gradient(to right, transparent, rgba(200,160,100,0.25), transparent); }
+    .login-field { margin-bottom: 16px; }
+    .login-field input { width: 100%; height: 46px; padding: 0 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.2); border-radius: 8px; color: rgba(255,240,210,0.9); font-family: inherit; font-size: 14px; letter-spacing: 0.08em; outline: none; transition: border-color 0.2s; }
+    .login-field input:focus { border-color: rgba(200,160,100,0.55); }
+    .login-field input::placeholder { color: rgba(255,240,210,0.22); }
+    .login-code-row { display: flex; gap: 10px; }
+    .login-code-row input { flex: 1; }
+    .send-code-btn { flex-shrink: 0; height: 46px; padding: 0 16px; background: rgba(200,160,100,0.12); border: 1px solid rgba(200,160,100,0.35); border-radius: 8px; color: rgba(200,160,100,0.85); font-family: inherit; font-size: 13px; letter-spacing: 0.08em; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .send-code-btn:hover { background: rgba(200,160,100,0.2); }
+    .login-btn { width: 100%; height: 48px; margin-top: 8px; background: linear-gradient(135deg, rgba(200,160,100,0.85), rgba(180,130,70,0.85)); border: none; border-radius: 8px; color: rgba(8,6,15,0.9); font-family: inherit; font-size: 16px; letter-spacing: 0.3em; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .login-btn:hover { background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95)); }
+    .login-or { text-align: center; font-size: 12px; color: rgba(255,240,210,0.2); letter-spacing: 0.2em; margin: 20px 0; }
+    .wechat-btn { width: 100%; height: 46px; background: rgba(7,193,96,0.12); border: 1px solid rgba(7,193,96,0.3); border-radius: 8px; color: rgba(7,193,96,0.85); font-family: inherit; font-size: 14px; letter-spacing: 0.2em; cursor: pointer; transition: all 0.2s; }
+    .wechat-btn:hover { background: rgba(7,193,96,0.2); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+    <div class="nav-right" id="navRight">
+      <div class="nav-avatar">
+        <img src="" alt="头像" id="avatarImg" />
+      </div>
+      <span class="nav-login-text" id="navLoginText"></span>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="step-title">
+      <span class="diamond">✦</span>
+      <span>第 四 步 · 生 成 CP 合 照</span>
+      <span class="diamond">✦</span>
+    </div>
+
+    <div class="cp-stage">
+      <!-- 左：我的形象 -->
+      <div class="my-side">
+        <div class="side-img-wrap">
+          <img id="myImg" src="" alt="我的古风形象" />
+        </div>
+        <div class="side-label">我</div>
+      </div>
+
+      <!-- 中：心电图动效 -->
+      <div class="cp-center">
+        <div class="heartbeat-wrap">
+          <svg class="heartbeat-svg" viewBox="0 0 80 60">
+            <path class="heartbeat-glow" d="M0,30 L15,30 L22,30 L28,10 L34,50 L40,20 L46,40 L52,30 L58,30 L80,30" />
+            <path class="heartbeat-line" d="M0,30 L15,30 L22,30 L28,10 L34,50 L40,20 L46,40 L52,30 L58,30 L80,30" />
+          </svg>
+          <div class="heart-icon" id="heartIcon">♡</div>
+          <svg class="heartbeat-svg bottom" viewBox="0 0 80 60">
+            <path class="heartbeat-glow" d="M0,30 L15,30 L22,30 L28,10 L34,50 L40,20 L46,40 L52,30 L58,30 L80,30" />
+            <path class="heartbeat-line" d="M0,30 L15,30 L22,30 L28,10 L34,50 L40,20 L46,40 L52,30 L58,30 L80,30" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- 右：TA -->
+      <div class="ta-side">
+        <div class="side-img-wrap">
+          <img id="taImg" src="" alt="CP" style="display:none;" />
+        </div>
+        <div class="ta-empty" id="taEmpty">
+          <div class="empty-silhouette"></div>
+          <div class="empty-text">选择你的 CP</div>
+          <div class="empty-hint">从下方角色中选择</div>
+        </div>
+        <div class="side-label" style="display:none;" id="taLabel">TA</div>
+      </div>
+    </div>
+
+    <!-- CP 候选 -->
+    <div class="cp-candidates" id="cpCandidates"></div>
+
+    <!-- 生成按钮 -->
+    <div class="gen-row">
+      <button class="gen-btn" id="genBtn" disabled>
+        <span>✦</span><span>生成 CP 合照</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 等待态 -->
+  <div class="waiting-overlay" id="waitingOverlay">
+    <div class="ink-animation">
+      <div class="ink-circle"></div>
+      <div class="ink-circle"></div>
+      <div class="ink-circle"></div>
+      <div class="ink-center"></div>
+    </div>
+    <div class="waiting-text">
+      <span class="diamond">✦</span>
+      <span>正在生成「<span id="waitingCpText">云笙 × 涂山璟</span>」合照</span>
+      <span class="diamond">✦</span>
+    </div>
+    <div class="waiting-hint">预计需要 15 ~ 30 秒</div>
+  </div>
+
+  <!-- 登录弹窗 -->
+  <div class="login-modal" id="loginModal">
+    <div class="login-card">
+      <span class="login-close" id="loginClose">✕</span>
+      <div class="login-title">登录拾梦录</div>
+      <div class="login-subtitle">✦ 解锁完整古风体验 ✦</div>
+      <div class="login-divider"></div>
+      <div class="login-field">
+        <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" />
+      </div>
+      <div class="login-field">
+        <div class="login-code-row">
+          <input type="text" id="codeInput" placeholder="请输入验证码" maxlength="6" />
+          <button class="send-code-btn" id="sendCodeBtn" onclick="sendCode()">获取验证码</button>
+        </div>
+      </div>
+      <button class="login-btn" onclick="doLogin()">登 录</button>
+      <div class="login-or">— 或 —</div>
+      <button class="wechat-btn">微信一键登录</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const dramas = ['《逐风玉恋》'];
+
+    // ── CP 候选角色 + 对应 Dify CP 模板 URL ──
+    // templateUrl 会在用户点击选 CP 时存入 localStorage，供 generateCPImage 使用
+    const _TOS = 'https://cp-images.tos-cn-beijing.volces.com/zhuyu';
+    const _M = (n) => `${_TOS}/template_zhuyu_male_${n}.jpg`;
+    const _F = (n) => `${_TOS}/template_zhuyu_female_${n}.jpg`;
+
+    const dramaCharacters = [
+      // 逐风玉恋
+      [
+        { name: '相柳',   gender: 'male',   img: _M(1), templateUrl: _M(1) },
+        { name: '涂山璟', gender: 'male',   img: _M(2), templateUrl: _M(2) },
+        { name: '轩辕辞', gender: 'male',   img: _M(3), templateUrl: _M(3) },
+        { name: '阿念',   gender: 'male',   img: _M(4), templateUrl: _M(4) },
+        { name: '小夭',   gender: 'male',   img: _M(5), templateUrl: _M(5) },
+        { name: '芙瑶',   gender: 'female', img: _F(1), templateUrl: _F(1) },
+        { name: '锦鸢',   gender: 'female', img: _F(2), templateUrl: _F(2) },
+        { name: '素霜',   gender: 'female', img: _F(3), templateUrl: _F(3) },
+        { name: '云歌',   gender: 'female', img: _F(4), templateUrl: _F(4) },
+        { name: '幽兰',   gender: 'female', img: _F(5), templateUrl: _F(5) },
+        { name: '明珠',   gender: 'female', img: _F(6), templateUrl: _F(6) },
+        { name: '霁月',   gender: 'female', img: _F(7), templateUrl: _F(7) },
+      ],
+    ];
+
+    const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
+    const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
+    const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
+    let curDrama = dramaIndex;
+    let selectedCPIndex = -1;
+
+    // 我的图
+    document.getElementById('myImg').src = generatedImage;
+
+    // 头像
+    const userPhoto = localStorage.getItem('userPhoto');
+    if (isLoggedIn && userPhoto) { document.getElementById('avatarImg').src = userPhoto; }
+    else { document.getElementById('avatarImg').src = 'assets/touxiang.png'; }
+    document.getElementById('navLoginText').textContent = isLoggedIn ? '' : '未登录';
+
+    // 导航
+    const dropBtn = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel = document.getElementById('dropLabel');
+    const items = document.querySelectorAll('.dropdown-item');
+    // dropLabel固定显示IP剧集
+    items.forEach((x, j) => x.classList.toggle('on', j === curDrama));
+    dropBtn.addEventListener('click', e => { e.stopPropagation(); const o = dropMenu.classList.toggle('open'); dropBtn.classList.toggle('open', o); });
+    document.addEventListener('click', () => { dropMenu.classList.remove('open'); dropBtn.classList.remove('open'); });
+    items.forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation(); const i = +el.dataset.i;
+        localStorage.setItem('selectedDramaIndex', i);
+        localStorage.setItem('selectedDrama', JSON.stringify({ label: dramas[i] }));
+        window.location.href = 'step2.html';
+      });
+    });
+    document.getElementById('navRight').addEventListener('click', () => { if (!isLoggedIn) document.getElementById('loginModal').style.display = 'flex'; });
+
+    // 过滤掉用户自己选的那个模板，避免自己和自己配对
+    const userTemplateUrl = localStorage.getItem('selectedTemplateUrl') || '';
+    const allChars = dramaCharacters[dramaIndex] || dramaCharacters[0];
+    const candidates = allChars.filter(c => c.templateUrl !== userTemplateUrl);
+    const container = document.getElementById('cpCandidates');
+    candidates.forEach((char, idx) => {
+      const card = document.createElement('div');
+      card.className = 'cp-card';
+      card.innerHTML = `<span class="card-check">✦</span><div class="cp-card-name">${char.name}</div>`;
+      const img = document.createElement('img');
+      img.src = char.templateUrl || char.img;
+      img.alt = char.name;
+      img.loading = 'eager';
+      img.onerror = () => { if (img.src !== char.img) { img.src = char.img; } else { img.style.background = 'linear-gradient(135deg,#2a1f3d,#1a1228)'; img.src = ''; } };
+      card.insertBefore(img, card.firstChild);
+      card.addEventListener('click', () => selectCP(idx, char));
+      container.appendChild(card);
+    });
+
+    // 默认选中第一个
+    if (candidates.length > 0) {
+      selectCP(0, candidates[0]);
+    }
+
+    function selectCP(idx, char) {
+      selectedCPIndex = idx;
+      document.querySelectorAll('.cp-card').forEach((c, i) => c.classList.toggle('selected', i === idx));
+      // 右侧大图
+      const taImg = document.getElementById('taImg');
+      taImg.src = char.templateUrl || char.img;
+      taImg.style.display = '';
+      document.getElementById('taEmpty').classList.add('hidden');
+      document.getElementById('taLabel').style.display = '';
+      // 心变实心金色
+      document.getElementById('heartIcon').textContent = '❤';
+      document.getElementById('heartIcon').style.color = 'rgba(220,180,120,0.95)';
+      document.getElementById('heartIcon').style.textShadow = '0 0 16px rgba(200,160,100,0.6)';
+      localStorage.setItem('selectedCPName', char.name);
+      localStorage.setItem('selectedCPIndex', idx);
+      // 存入 CP 模板 URL，供 generateCPImage 使用
+      localStorage.setItem('selectedCPTemplateUrl', char.templateUrl || '');
+      document.getElementById('waitingCpText').textContent = flowerName + ' × ' + char.name;
+      document.getElementById('genBtn').disabled = false;
+    }
+
+    // 生成 CP 合照
+    document.getElementById('genBtn').addEventListener('click', async () => {
+      if (document.getElementById('genBtn').disabled) return;
+      const cpName = localStorage.getItem('selectedCPName') || '';
+      document.getElementById('waitingOverlay').classList.add('show');
+      try {
+        const result = await generateCPImage(generatedImage, cpName, dramaIndex);
+        if (result && result.success) {
+          localStorage.setItem('generatedCPImage', result.imageUrl);
+          window.location.href = 'step7_cp_result.html';
+        } else {
+          document.getElementById('waitingOverlay').classList.remove('show');
+          alert('生成失败: ' + (result?.error || '未知错误') + '\n请重试');
+        }
+      } catch (err) {
+        document.getElementById('waitingOverlay').classList.remove('show');
+        alert('生成出错: ' + err.message + '\n请重试');
+      }
+    });
+
+    // 登录弹窗
+    document.getElementById('loginClose').addEventListener('click', () => { document.getElementById('loginModal').style.display = 'none'; });
+    document.getElementById('loginModal').addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
+    let codeTimer = 0;
+    function sendCode() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      if (!/^1[3-9]\d{9}$/.test(phone)) { alert('请输入正确的手机号'); return; }
+      if (codeTimer > 0) return;
+      const btn = document.getElementById('sendCodeBtn');
+      codeTimer = 60; btn.disabled = true;
+      const t = setInterval(() => { codeTimer--; btn.textContent = codeTimer + 's后重试'; if (codeTimer <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = '获取验证码'; } }, 1000);
+      alert('验证码已发送（演示）');
+    }
+    function doLogin() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      const code = document.getElementById('codeInput').value.trim();
+      if (!phone || !code) { alert('请填写手机号和验证码'); return; }
+      // legacy phone login removed
+      document.getElementById('loginModal').style.display = 'none';
+      location.reload();
+    }
+  </script>
+
+<script>
+    async function sendCode() {
+      const email = document.getElementById("emailInput").value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById("loginTip").textContent = "请输入正确的邮箱地址"; return; }
+      const btn = document.getElementById("codeBtn");
+      btn.disabled = true; document.getElementById("loginTip").textContent = "";
+      try {
+        const r = await fetch("/api/send-email-code", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+        const d = await r.json();
+        if (!r.ok) { document.getElementById("loginTip").textContent = d.error||"发送失败"; btn.disabled=false; return; }
+        let t=60; btn.textContent=t+"s";
+        const ti=setInterval(()=>{ t--; btn.textContent=t+"s"; if(t<=0){clearInterval(ti);btn.disabled=false;btn.textContent="获取验证码";}},1000);
+      } catch(e){ document.getElementById("loginTip").textContent="网络错误"; btn.disabled=false; }
+    }
+    async function doLogin() {
+      const email=document.getElementById("emailInput").value.trim();
+      const code=document.getElementById("codeInput").value.trim();
+      if(!email||!code){document.getElementById("loginTip").textContent="请填写邮箱和验证码";return;}
+      const btn=document.getElementById("loginSubmitBtn");
+      btn.disabled=true; btn.textContent="验证中";
+      try {
+        const r=await fetch("/api/verify-email-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
+        const d=await r.json();
+        if(!r.ok){document.getElementById("loginTip").textContent=d.error||"验证失败";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";return;}
+        localStorage.setItem("isLoggedIn","true"); localStorage.setItem("userEmail",email);
+        document.getElementById("loginModal").style.display="none";
+      } catch(e){document.getElementById("loginTip").textContent="网络错误";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";}
+    }
+  </script>
+</body>
+</html>

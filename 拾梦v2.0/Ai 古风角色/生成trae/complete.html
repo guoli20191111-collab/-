@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾梦录 · 完成</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+      color: rgba(255,240,210,0.9);
+    }
+
+    /* ── 导航栏 ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px; display: flex; align-items: center; padding: 0 48px;
+      background: linear-gradient(to bottom, rgba(8,5,16,0.92) 0%, rgba(12,8,22,0.78) 100%);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .nav::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.15) 15%, rgba(200,160,100,0.45) 40%, rgba(220,180,120,0.55) 50%, rgba(200,160,100,0.45) 60%, rgba(200,160,100,0.15) 85%, transparent 100%); }
+    .nav::before { content: ''; position: absolute; bottom: -3px; left: 15%; right: 15%; height: 1px; background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.08) 20%, rgba(200,160,100,0.2) 50%, rgba(200,160,100,0.08) 80%, transparent 100%); }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; margin-right: 36px; }
+    .logo-img { height: 72px; width: auto; display: block; }
+    .nav-center { position: relative; flex-shrink: 0; }
+    .dropdown-btn { display: flex; align-items: center; gap: 10px; padding: 0 22px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.3); border-radius: 6px; color: rgba(255,240,210,0.75); font-family: inherit; font-size: 15px; letter-spacing: 0.22em; cursor: pointer; transition: all 0.22s; white-space: nowrap; }
+    .dropdown-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.65); }
+    .dropdown-btn.open { background: rgba(200,160,100,0.12); border-color: rgba(220,180,120,0.8); color: #fff; border-radius: 6px 6px 0 0; }
+    .dropdown-btn .btn-diamond { font-size: 7px; color: rgba(200,160,100,0.6); }
+    .dropdown-btn .arrow { font-size: 8px; color: rgba(200,160,100,0.5); transition: transform 0.2s; margin-left: 2px; }
+    .dropdown-btn.open .arrow { transform: rotate(180deg); }
+    .dropdown-menu { position: absolute; top: 100%; left: 0; min-width: 100%; background: rgba(8,5,16,0.95); border: 1px solid rgba(200,160,100,0.35); border-top: none; border-radius: 0 0 6px 6px; backdrop-filter: blur(24px); overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(-4px); transition: opacity 0.18s, transform 0.18s; }
+    .dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .dropdown-item { display: flex; align-items: center; justify-content: center; padding: 11px 20px; font-size: 13px; letter-spacing: 0.22em; color: rgba(255,240,210,0.5); cursor: pointer; transition: color 0.15s, background 0.15s; border-bottom: 1px solid rgba(200,160,100,0.1); }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before { content: '◆'; margin-right: 8px; font-size: 5px; color: rgba(200,160,100,0.8); vertical-align: middle; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .nav-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(220,180,120,0.8); background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-login-text { font-size: 13px; letter-spacing: 0.15em; color: rgba(200,160,100,0.7); white-space: nowrap; }
+
+    /* ── 模糊背景（CP合照） ── */
+    .page-blur-bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .page-blur-bg img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: blur(24px) brightness(0.35);
+      transform: scale(1.08);
+    }
+    .page-blur-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(8,6,15,0.4);
+    }
+
+    /* ── 粒子画布 ── */
+    #particleCanvas {
+      position: fixed; inset: 0; pointer-events: none; z-index: 50;
+      transition: opacity 1.5s ease;
+    }
+
+    /* ── 主内容 ── */
+    .page {
+      position: fixed; inset: 68px 0 0 0; z-index: 100;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 80px;
+    }
+
+    /* 完成标题 */
+    .complete-title {
+      text-align: center; margin-bottom: 10px;
+      font-size: 26px; font-weight: 700; letter-spacing: 0.35em;
+      color: rgba(255,240,210,0.95);
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+    }
+    .complete-title .diamond { font-size: 12px; color: rgba(200,160,100,0.8); margin: 0 10px; }
+    .complete-title.show { opacity: 1; transform: translateY(0); }
+
+    .complete-subtitle {
+      font-size: 14px; letter-spacing: 0.3em;
+      color: rgba(200,160,100,0.6); text-align: center;
+      margin-bottom: 48px;
+      opacity: 0; transition: opacity 0.8s ease 0.6s;
+    }
+    .complete-subtitle.show { opacity: 1; }
+
+    /* 三张缩略图 */
+    .results-row {
+      display: flex; gap: 24px; margin-bottom: 48px;
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.8s ease 0.8s, transform 0.8s ease 0.8s;
+    }
+    .results-row.show { opacity: 1; transform: translateY(0); }
+
+    .result-card {
+      width: 150px;
+      border: 1px solid rgba(200,160,100,0.25);
+      border-radius: 10px; overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      transition: transform 0.25s, border-color 0.25s;
+      cursor: pointer;
+    }
+    .result-card:hover { transform: translateY(-4px); border-color: rgba(200,160,100,0.6); }
+    .result-card-img {
+      width: 100%; aspect-ratio: 9/16;
+      object-fit: cover; display: block;
+      background: rgba(255,255,255,0.03);
+    }
+    .result-card-img.novel-card {
+      aspect-ratio: 9/16;
+      display: flex; align-items: flex-start;
+      padding: 16px 12px;
+      font-size: 10px; line-height: 1.9; letter-spacing: 0.08em;
+      color: rgba(255,240,210,0.55);
+      white-space: pre-wrap; overflow: hidden;
+      background: rgba(12,8,22,0.9);
+    }
+    .result-card-label {
+      padding: 10px 0; text-align: center;
+      font-size: 12px; letter-spacing: 0.2em;
+      color: rgba(255,240,210,0.5);
+    }
+
+    /* 底部按钮 */
+    .btns-row {
+      display: flex; gap: 20px;
+      opacity: 0; transition: opacity 0.8s ease 1s;
+    }
+    .btns-row.show { opacity: 1; }
+    .restart-btn {
+      width: 200px; height: 52px;
+      background: rgba(200,160,100,0.12);
+      border: 1px solid rgba(200,160,100,0.4);
+      border-radius: 8px;
+      color: rgba(255,240,210,0.85); font-family: inherit;
+      font-size: 15px; letter-spacing: 0.3em;
+      cursor: pointer; transition: all 0.25s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .restart-btn:hover { background: rgba(200,160,100,0.2); border-color: rgba(200,160,100,0.7); color: rgba(255,240,210,1); }
+    .share-btn {
+      width: 200px; height: 52px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.85) 0%, rgba(180,130,70,0.85) 100%);
+      border: none; border-radius: 8px;
+      color: rgba(8,6,15,0.95); font-family: inherit;
+      font-size: 15px; letter-spacing: 0.3em; font-weight: 600;
+      cursor: pointer; transition: all 0.25s;
+    }
+    .share-btn:hover { background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95)); box-shadow: 0 4px 24px rgba(200,160,100,0.4); transform: translateY(-1px); }
+
+    /* 登录弹窗 */
+    .login-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+    .login-card { width: 420px; background: rgba(12,8,22,0.96); border: 1px solid rgba(200,160,100,0.3); border-radius: 16px; padding: 48px 44px 44px; position: relative; }
+    .login-close { position: absolute; top: 18px; right: 22px; font-size: 20px; color: rgba(255,240,210,0.35); cursor: pointer; transition: color 0.2s; line-height: 1; }
+    .login-close:hover { color: rgba(255,240,210,0.8); }
+    .login-title { font-size: 20px; letter-spacing: 0.3em; font-weight: 600; color: rgba(255,240,210,0.95); text-align: center; margin-bottom: 6px; }
+    .login-subtitle { font-size: 12px; letter-spacing: 0.2em; color: rgba(200,160,100,0.5); text-align: center; margin-bottom: 32px; }
+    .login-divider { height: 1px; margin-bottom: 28px; background: linear-gradient(to right, transparent, rgba(200,160,100,0.25), transparent); }
+    .login-field { margin-bottom: 16px; }
+    .login-field input { width: 100%; height: 46px; padding: 0 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.2); border-radius: 8px; color: rgba(255,240,210,0.9); font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s; }
+    .login-field input:focus { border-color: rgba(200,160,100,0.55); }
+    .login-field input::placeholder { color: rgba(255,240,210,0.22); }
+    .login-code-row { display: flex; gap: 10px; }
+    .login-code-row input { flex: 1; }
+    .send-code-btn { flex-shrink: 0; height: 46px; padding: 0 16px; background: rgba(200,160,100,0.12); border: 1px solid rgba(200,160,100,0.35); border-radius: 8px; color: rgba(200,160,100,0.85); font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .send-code-btn:hover { background: rgba(200,160,100,0.2); }
+    .login-btn { width: 100%; height: 48px; margin-top: 8px; background: linear-gradient(135deg, rgba(200,160,100,0.85), rgba(180,130,70,0.85)); border: none; border-radius: 8px; color: rgba(8,6,15,0.9); font-family: inherit; font-size: 16px; letter-spacing: 0.3em; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .login-btn:hover { background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95)); }
+    .login-or { text-align: center; font-size: 12px; color: rgba(255,240,210,0.2); letter-spacing: 0.2em; margin: 20px 0; }
+    .wechat-btn { width: 100%; height: 46px; background: rgba(7,193,96,0.12); border: 1px solid rgba(7,193,96,0.3); border-radius: 8px; color: rgba(7,193,96,0.85); font-family: inherit; font-size: 14px; letter-spacing: 0.2em; cursor: pointer; transition: all 0.2s; }
+    .wechat-btn:hover { background: rgba(7,193,96,0.2); }
+  </style>
+</head>
+<body>
+
+  <div class="page-blur-bg">
+    <img id="blurBgImg" src="assets/fenshou.png" alt="" />
+  </div>
+
+  <canvas id="particleCanvas"></canvas>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+    <div class="nav-right" id="navRight">
+      <div class="nav-avatar">
+        <img src="" alt="头像" id="avatarImg" />
+      </div>
+      <span class="nav-login-text" id="navLoginText"></span>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="complete-title" id="completeTitle">
+      <span class="diamond">✦</span>你的古风之旅已完成<span class="diamond">✦</span>
+    </div>
+    <div class="complete-subtitle" id="completeSubtitle">旧梦已拾，此刻成录</div>
+
+    <div class="results-row" id="resultsRow">
+      <div class="result-card" id="card1">
+        <img class="result-card-img" id="imgGenerated" src="" alt="古风形象" />
+        <div class="result-card-label">古风形象</div>
+      </div>
+      <div class="result-card">
+        <div class="result-card-img novel-card" id="novelPreview"></div>
+        <div class="result-card-label">同人文</div>
+      </div>
+      <div class="result-card" id="card3">
+        <img class="result-card-img" id="imgCP" src="" alt="CP 合照" />
+        <div class="result-card-label">CP 合照</div>
+      </div>
+    </div>
+
+    <div class="btns-row" id="btnsRow">
+      <button class="restart-btn" id="restartBtn">✦ 再来一次</button>
+      <button class="share-btn" id="shareBtn">分享全旅程 →</button>
+    </div>
+  </div>
+
+  <!-- 登录弹窗 -->
+  <div id="loginModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:420px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:40px 36px;position:relative;font-family:'PingFang SC','Microsoft YaHei','STSong',serif;">
+      <button onclick="document.getElementById('loginModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(200,160,100,0.6);font-size:20px;cursor:pointer;">×</button>
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:13px;color:rgba(200,160,100,0.6);letter-spacing:0.3em;margin-bottom:8px;">拾梦录</div>
+        <div style="font-size:20px;font-weight:300;color:rgba(255,240,210,0.95);letter-spacing:0.2em;">保存你的古风形象</div>
+        <div style="font-size:13px;color:rgba(200,160,100,0.5);letter-spacing:0.15em;margin-top:6px;">开启专属故事</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;gap:0;margin-bottom:10px;">
+          <input id="emailInput" type="email" placeholder="请输入邮箱地址" style="flex:1;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-right:none;border-radius:6px 0 0 6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+          <button id="codeBtn" style="width:110px;height:46px;background:rgba(200,160,100,0.12);border:1px solid rgba(200,160,100,0.3);border-radius:0 6px 6px 0;color:rgba(220,180,120,0.9);font-family:inherit;font-size:13px;cursor:pointer;white-space:nowrap;" onclick="sendCode()">获取验证码</button>
+        </div>
+        <input id="codeInput" type="text" placeholder="请输入验证码" maxlength="6" style="width:100%;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+      </div>
+      <div id="loginTip" style="font-size:12px;color:#e07070;letter-spacing:0.08em;margin-bottom:8px;min-height:18px;text-align:center;"></div>
+      <button id="loginSubmitBtn" onclick="doLogin()" style="width:100%;height:50px;background:linear-gradient(135deg,rgba(200,160,100,0.25),rgba(180,120,80,0.2));border:1px solid rgba(220,180,120,0.6);border-radius:6px;color:rgba(255,240,210,0.95);font-family:inherit;font-size:16px;letter-spacing:0.35em;cursor:pointer;">✦ 登 录 ✦</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const dramas = ['《逐风玉恋》'];
+
+    const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
+    const cpImage = localStorage.getItem('generatedCPImage') || 'assets/fenshou.png';
+    const novel = localStorage.getItem('generatedNovel') || '月色如水，洒落在长安城的青石板上。云笙独立桥头，衣袂随风轻扬，手中那枚玉佩泛着温润的光泽。\n\n"你可知，这枚玉佩是我母亲留给我的唯一念想。"\n\n他的声音低沉如大提琴，在夜风中显得格外清晰。身后的桃花纷纷扬扬，落了满肩，像极了那年初见时的模样。\n\n她垂眸不语，只是轻轻握住了他的手。十指相扣间，仿佛前世今生的缘分都在此刻交汇……';
+    const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
+    const cpName = localStorage.getItem('selectedCPName') || '';
+    const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
+    let curDrama = dramaIndex;
+
+    // 图片
+    document.getElementById('imgGenerated').src = generatedImage;
+    document.getElementById('imgCP').src = cpImage;
+    document.getElementById('blurBgImg').src = cpImage;
+    document.getElementById('novelPreview').textContent = novel.slice(0, 180);
+
+    // 头像
+    const userPhoto = localStorage.getItem('userPhoto');
+    if (isLoggedIn && userPhoto) { document.getElementById('avatarImg').src = userPhoto; }
+    else { document.getElementById('avatarImg').src = 'assets/touxiang.png'; }
+    document.getElementById('navLoginText').textContent = isLoggedIn ? '' : '未登录';
+
+    // 导航
+    const dropBtn = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel = document.getElementById('dropLabel');
+    const items = document.querySelectorAll('.dropdown-item');
+    // dropLabel固定显示IP剧集
+    items.forEach((x, j) => x.classList.toggle('on', j === curDrama));
+    dropBtn.addEventListener('click', e => { e.stopPropagation(); const o = dropMenu.classList.toggle('open'); dropBtn.classList.toggle('open', o); });
+    document.addEventListener('click', () => { dropMenu.classList.remove('open'); dropBtn.classList.remove('open'); });
+    items.forEach(el => { el.addEventListener('click', e => { e.stopPropagation(); const i = +el.dataset.i; localStorage.setItem('selectedDramaIndex', i); localStorage.setItem('selectedDrama', JSON.stringify({ label: dramas[i] })); window.location.href = 'step2.html'; }); });
+    document.getElementById('navRight').addEventListener('click', () => { if (!isLoggedIn) document.getElementById('loginModal').style.display = 'flex'; });
+
+    // ── 粒子动画 ──
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const COLORS = ['rgba(220,180,120,0.9)', 'rgba(200,160,100,0.8)', 'rgba(255,240,180,0.7)', 'rgba(180,140,80,0.6)'];
+
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.5 - canvas.height * 0.5,
+        vx: (Math.random() - 0.5) * 0.8,
+        vy: Math.random() * 1.2 + 0.4,
+        size: Math.random() * 4 + 1,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        char: Math.random() > 0.5 ? '✦' : '·',
+        opacity: Math.random() * 0.8 + 0.2,
+      });
+    }
+
+    let startTime = Date.now();
+    let animating = true;
+
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.opacity;
+        ctx.fillStyle = p.color;
+        ctx.font = `${p.size * 3}px serif`;
+        ctx.fillText(p.char, p.x, p.y);
+        ctx.restore();
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y > canvas.height + 20) {
+          p.y = -20;
+          p.x = Math.random() * canvas.width;
+        }
+      });
+      if (animating) requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+
+    // 2秒后粒子渐隐
+    setTimeout(() => {
+      canvas.style.opacity = '0';
+      setTimeout(() => { animating = false; ctx.clearRect(0, 0, canvas.width, canvas.height); }, 1500);
+    }, 2000);
+
+    // 内容渐显
+    setTimeout(() => {
+      document.getElementById('completeTitle').classList.add('show');
+      document.getElementById('completeSubtitle').classList.add('show');
+      document.getElementById('resultsRow').classList.add('show');
+      document.getElementById('btnsRow').classList.add('show');
+    }, 400);
+
+    // 再来一次
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      const keysToKeep = ['userPhone', 'userPhoto'];
+      const saved = {};
+      keysToKeep.forEach(k => { const v = localStorage.getItem(k); if (v) saved[k] = v; });
+      localStorage.clear();
+      Object.entries(saved).forEach(([k, v]) => localStorage.setItem(k, v));
+      window.location.href = 'index.html';
+    });
+
+    // 分享
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({ title: '拾梦录 · 我的古风之旅', text: `「${flowerName}」的古风之旅，与${cpName}的故事就此成录 ✦` });
+      } else {
+        alert('分享功能即将上线，敬请期待');
+      }
+    });
+
+  </script>
+
+  <script>
+    async function sendCode() {
+      const email = document.getElementById('emailInput').value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('loginTip').textContent = '请输入正确的邮箱地址'; return;
+      }
+      const btn = document.getElementById('codeBtn');
+      btn.disabled = true;
+      document.getElementById('loginTip').textContent = '';
+      try {
+        const res = await fetch('/api/send-email-code', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok) { document.getElementById('loginTip').textContent = data.error || '发送失败'; btn.disabled = false; return; }
+        let t = 60; btn.textContent = t + 's';
+        const timer = setInterval(() => { t--; btn.textContent = t + 's'; if (t <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; } }, 1000);
+      } catch (e) { document.getElementById('loginTip').textContent = '网络错误，请重试'; btn.disabled = false; }
+    }
+    async function doLogin() {
+      const email = document.getElementById('emailInput').value.trim();
+      const code  = document.getElementById('codeInput').value.trim();
+      if (!email || !code) { document.getElementById('loginTip').textContent = '请填写邮箱和验证码'; return; }
+      const btn = document.getElementById('loginSubmitBtn');
+      btn.disabled = true; btn.textContent = '验证中…';
+      try {
+        const res = await fetch('/api/verify-email-code', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code }),
+        });
+        const data = await res.json();
+        if (!res.ok) { document.getElementById('loginTip').textContent = data.error || '验证失败'; btn.disabled = false; btn.textContent = '✦ 登 录 ✦'; return; }
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userEmail', email);
+        document.getElementById('loginModal').style.display = 'none';
+      } catch (e) { document.getElementById('loginTip').textContent = '网络错误，请重试'; btn.disabled = false; btn.textContent = '✦ 登 录 ✦'; }
+    }
+  </script>
+</body>
+</html>

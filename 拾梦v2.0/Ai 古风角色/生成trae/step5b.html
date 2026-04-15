@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾梦录 · 选择关系设定</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+      color: rgba(255,240,210,0.9);
+    }
+
+    /* ── 导航栏 ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(to bottom, rgba(8,5,16,0.92) 0%, rgba(12,8,22,0.78) 100%);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .nav::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.15) 15%, rgba(200,160,100,0.45) 40%, rgba(220,180,120,0.55) 50%, rgba(200,160,100,0.45) 60%, rgba(200,160,100,0.15) 85%, transparent 100%);
+    }
+    .nav::before {
+      content: ''; position: absolute; bottom: -3px; left: 15%; right: 15%; height: 1px;
+      background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.08) 20%, rgba(200,160,100,0.2) 50%, rgba(200,160,100,0.08) 80%, transparent 100%);
+    }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; margin-right: 36px; }
+    .logo-img { height: 72px; width: auto; display: block; }
+    .nav-center { position: relative; flex-shrink: 0; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.3); border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit; font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer; transition: all 0.22s; white-space: nowrap;
+    }
+    .dropdown-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.65); color: rgba(255,240,210,1); }
+    .dropdown-btn.open { background: rgba(200,160,100,0.12); border-color: rgba(220,180,120,0.8); color: #fff; border-radius: 6px 6px 0 0; }
+    .dropdown-btn .btn-diamond { font-size: 7px; color: rgba(200,160,100,0.6); }
+    .dropdown-btn:hover .btn-diamond, .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow { font-size: 8px; color: rgba(200,160,100,0.5); transition: transform 0.2s; margin-left: 2px; }
+    .dropdown-btn.open .arrow { transform: rotate(180deg); color: rgba(220,180,120,0.8); }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0; min-width: 100%;
+      background: rgba(8,5,16,0.95); border: 1px solid rgba(200,160,100,0.35); border-top: none;
+      border-radius: 0 0 6px 6px; backdrop-filter: blur(24px);
+      overflow: hidden; opacity: 0; pointer-events: none;
+      transform: translateY(-4px); transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px; font-size: 13px; letter-spacing: 0.22em;
+      color: rgba(255,240,210,0.5); cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before { content: '◆'; margin-right: 8px; font-size: 5px; color: rgba(200,160,100,0.8); vertical-align: middle; }
+
+    .nav-right {
+      margin-left: auto; display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .nav-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid rgba(220,180,120,0.8);
+      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-login-text { font-size: 13px; letter-spacing: 0.15em; color: rgba(200,160,100,0.7); white-space: nowrap; }
+
+    /* ── 主布局 ── */
+    .page { position: fixed; inset: 68px 0 0 0; display: flex; max-width: 1100px; margin: 0 auto; }
+
+    /* 全屏模糊背景 */
+    .page-blur-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background-size: cover; background-position: center;
+      filter: blur(24px) brightness(0.35); transform: scale(1.08);
+    }
+
+    /* 左侧图片 55% */
+    .image-side { width: 55%; position: relative; overflow: hidden; z-index: 1; }
+    .image-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .image-wrap img { height: 100%; width: auto; max-width: 100%; object-fit: contain; position: relative; z-index: 1; }
+
+    /* 右侧面板 45% */
+    .panel-side {
+      width: 45%; display: flex; align-items: center; justify-content: center;
+      padding: 48px 24px;
+      background: transparent;
+      border-left: none;
+      position: relative; z-index: 1;
+    }
+
+    .panel {
+      width: 100%; max-width: 360px;
+      background: rgba(8,6,15,0.55);
+      border: 1px solid rgba(200,160,100,0.2);
+      border-radius: 12px;
+      padding: 40px 36px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .panel-step {
+      font-size: 12px; letter-spacing: 0.35em;
+      color: rgba(200,160,100,0.5);
+      margin-bottom: 8px;
+    }
+
+    .panel-title {
+      font-size: 22px; font-weight: 600; letter-spacing: 0.25em;
+      color: rgba(255,240,210,0.95);
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 8px;
+    }
+    .panel-title .title-diamond { font-size: 10px; color: rgba(200,160,100,0.8); }
+
+    .panel-divider {
+      height: 1px; margin: 16px 0;
+      background: linear-gradient(to right, transparent, rgba(200,160,100,0.3), transparent);
+    }
+
+    .panel-subtitle {
+      font-size: 14px; letter-spacing: 0.2em;
+      color: rgba(255,240,210,0.5);
+      margin-bottom: 24px;
+    }
+    .panel-subtitle .flower-name { color: rgba(220,180,120,0.85); }
+
+    /* 2×2 选项卡片 */
+    .relation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .relation-card {
+      position: relative;
+      padding: 20px 12px;
+      border: 1px solid rgba(200,160,100,0.2);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      min-height: 80px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+    }
+    .relation-card:hover {
+      background: rgba(200,160,100,0.06);
+      border-color: rgba(200,160,100,0.45);
+    }
+    .relation-card.selected {
+      background: rgba(200,160,100,0.1);
+      border-color: rgba(220,180,120,0.8);
+      box-shadow: 0 0 16px rgba(200,160,100,0.15);
+    }
+    .relation-card .card-check {
+      position: absolute; top: 7px; right: 9px;
+      font-size: 7px; color: rgba(200,160,100,0.8);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .relation-card.selected .card-check { opacity: 1; }
+
+    .card-icon { font-size: 20px; line-height: 1; }
+    .card-label {
+      font-size: 14px; letter-spacing: 0.15em;
+      color: rgba(255,240,210,0.7);
+      transition: color 0.2s;
+      line-height: 1.5;
+    }
+    .relation-card.selected .card-label { color: rgba(255,240,210,0.95); }
+
+    /* 自定义输入框 */
+    .custom-input-wrap {
+      margin-top: -8px; margin-bottom: 16px;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease, opacity 0.3s;
+      opacity: 0;
+    }
+    .custom-input-wrap.show {
+      max-height: 80px;
+      opacity: 1;
+    }
+    .custom-input {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,160,100,0.25);
+      border-radius: 6px;
+      color: rgba(255,240,210,0.9); font-family: inherit; font-size: 14px;
+      letter-spacing: 0.1em; outline: none;
+      transition: border-color 0.2s;
+    }
+    .custom-input:focus { border-color: rgba(200,160,100,0.6); }
+    .custom-input::placeholder { color: rgba(255,240,210,0.25); }
+
+    /* 下一步按钮 */
+    .next-btn {
+      width: 100%; height: 48px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.85) 0%, rgba(180,130,70,0.85) 100%);
+      border: none; border-radius: 8px;
+      color: rgba(8,6,15,0.95); font-family: inherit;
+      font-size: 16px; letter-spacing: 0.3em; font-weight: 600;
+      cursor: pointer; transition: all 0.25s;
+    }
+    .next-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(220,180,120,0.95) 0%, rgba(200,155,85,0.95) 100%);
+      box-shadow: 0 4px 20px rgba(200,160,100,0.35);
+      transform: translateY(-1px);
+    }
+    .next-btn:disabled {
+      background: rgba(200,160,100,0.2);
+      color: rgba(255,240,210,0.3);
+      cursor: not-allowed;
+    }
+
+    /* ── 登录弹窗 ── */
+    .login-modal {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .login-card {
+      width: 420px;
+      background: rgba(12,8,22,0.96);
+      border: 1px solid rgba(200,160,100,0.3);
+      border-radius: 16px;
+      padding: 48px 44px 44px;
+      position: relative;
+    }
+    .login-close {
+      position: absolute; top: 18px; right: 22px;
+      font-size: 20px; color: rgba(255,240,210,0.35);
+      cursor: pointer; transition: color 0.2s; line-height: 1;
+    }
+    .login-close:hover { color: rgba(255,240,210,0.8); }
+    .login-title {
+      font-size: 20px; letter-spacing: 0.3em; font-weight: 600;
+      color: rgba(255,240,210,0.95); text-align: center; margin-bottom: 6px;
+    }
+    .login-subtitle {
+      font-size: 12px; letter-spacing: 0.2em; color: rgba(200,160,100,0.5);
+      text-align: center; margin-bottom: 32px;
+    }
+    .login-divider {
+      height: 1px; margin-bottom: 28px;
+      background: linear-gradient(to right, transparent, rgba(200,160,100,0.25), transparent);
+    }
+    .login-field { margin-bottom: 16px; }
+    .login-field input {
+      width: 100%; height: 46px; padding: 0 16px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.2);
+      border-radius: 8px; color: rgba(255,240,210,0.9); font-family: inherit;
+      font-size: 14px; letter-spacing: 0.08em; outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-field input:focus { border-color: rgba(200,160,100,0.55); }
+    .login-field input::placeholder { color: rgba(255,240,210,0.22); }
+    .login-code-row { display: flex; gap: 10px; }
+    .login-code-row input { flex: 1; }
+    .send-code-btn {
+      flex-shrink: 0; height: 46px; padding: 0 16px;
+      background: rgba(200,160,100,0.12); border: 1px solid rgba(200,160,100,0.35);
+      border-radius: 8px; color: rgba(200,160,100,0.85); font-family: inherit;
+      font-size: 13px; letter-spacing: 0.08em; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .send-code-btn:hover { background: rgba(200,160,100,0.2); }
+    .login-btn {
+      width: 100%; height: 48px; margin-top: 8px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.85), rgba(180,130,70,0.85));
+      border: none; border-radius: 8px;
+      color: rgba(8,6,15,0.9); font-family: inherit;
+      font-size: 16px; letter-spacing: 0.3em; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .login-btn:hover { background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95)); }
+    .login-or { text-align: center; font-size: 12px; color: rgba(255,240,210,0.2); letter-spacing: 0.2em; margin: 20px 0; }
+    .wechat-btn {
+      width: 100%; height: 46px;
+      background: rgba(7,193,96,0.12); border: 1px solid rgba(7,193,96,0.3);
+      border-radius: 8px; color: rgba(7,193,96,0.85); font-family: inherit;
+      font-size: 14px; letter-spacing: 0.2em; cursor: pointer; transition: all 0.2s;
+    }
+    .wechat-btn:hover { background: rgba(7,193,96,0.2); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+    <div class="nav-right" id="navRight">
+      <div class="nav-avatar" id="navAvatar">
+        <img src="" alt="头像" id="avatarImg" />
+      </div>
+      <span class="nav-login-text" id="navLoginText"></span>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-blur-bg" id="blurBg"></div>
+    <!-- 左侧图片 -->
+    <div class="image-side">
+      <div class="image-wrap">
+        <img id="generatedImg" src="" alt="古风形象" />
+      </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div class="panel-side">
+      <div class="panel">
+        <div class="panel-step">第 三 步 · 生 成 同 人 文</div>
+        <div class="panel-title">
+          <span class="title-diamond">✦</span>
+          <span>选择关系设定</span>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="panel-subtitle">「<span class="flower-name" id="flowerNameDisplay">云笙</span>」与TA的关系是…</div>
+
+        <div class="relation-grid">
+          <div class="relation-card" data-value="竹马">
+            <span class="card-check">✦</span>
+            <div class="card-icon">🎋</div>
+            <div class="card-label">竹马</div>
+          </div>
+          <div class="relation-card" data-value="师徒">
+            <span class="card-check">✦</span>
+            <div class="card-icon">📜</div>
+            <div class="card-label">师徒</div>
+          </div>
+          <div class="relation-card" data-value="宿敌转恋人">
+            <span class="card-check">✦</span>
+            <div class="card-icon">⚔️</div>
+            <div class="card-label">宿敌转恋人</div>
+          </div>
+          <div class="relation-card" data-value="自定义" id="customCard">
+            <span class="card-check">✦</span>
+            <div class="card-icon">✍️</div>
+            <div class="card-label">自定义</div>
+          </div>
+        </div>
+
+        <div class="custom-input-wrap" id="customInputWrap">
+          <input class="custom-input" id="customInput" type="text" placeholder="输入你们的关系…" maxlength="20" />
+        </div>
+
+        <button class="next-btn" id="nextBtn" disabled>下一步 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 登录弹窗 -->
+  <div class="login-modal" id="loginModal">
+    <div class="login-card">
+      <span class="login-close" id="loginClose">✕</span>
+      <div class="login-title">登录拾梦录</div>
+      <div class="login-subtitle">✦ 解锁完整古风体验 ✦</div>
+      <div class="login-divider"></div>
+      <div class="login-field">
+        <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" />
+      </div>
+      <div class="login-field">
+        <div class="login-code-row">
+          <input type="text" id="codeInput" placeholder="请输入验证码" maxlength="6" />
+          <button class="send-code-btn" id="sendCodeBtn" onclick="sendCode()">获取验证码</button>
+        </div>
+      </div>
+      <button class="login-btn" onclick="doLogin()">登 录</button>
+      <div class="login-or">— 或 —</div>
+      <button class="wechat-btn">微信一键登录</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const dramas = [
+      { label:'《逐风玉恋》' },
+    ];
+
+    // ── 初始化 ──
+    const generatedImage = localStorage.getItem('generatedImage') || 'assets/moren.png';
+    const flowerName = localStorage.getItem('characterFlowerName') || '云笙';
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
+    let curDrama = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
+    let selectedRelation = '';
+
+    // 图片
+    document.getElementById('generatedImg').src = generatedImage;
+    document.getElementById('blurBg').style.backgroundImage = `url('${generatedImage}')`;
+
+    // 花名
+    document.getElementById('flowerNameDisplay').textContent = flowerName;
+
+    // 头像
+    const userPhoto = localStorage.getItem('userPhoto');
+    if (isLoggedIn && userPhoto) { document.getElementById('avatarImg').src = userPhoto; }
+    else { document.getElementById('avatarImg').src = 'assets/touxiang.png'; }
+    document.getElementById('navLoginText').textContent = isLoggedIn ? '' : '未登录';
+
+    // 导航下拉
+    const dropBtn = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel = document.getElementById('dropLabel');
+    const items = document.querySelectorAll('.dropdown-item');
+    if (dramas[curDrama]) {
+      // dropLabel固定显示IP剧集
+      items.forEach((x, j) => x.classList.toggle('on', j === curDrama));
+    }
+    dropBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = dropMenu.classList.toggle('open');
+      dropBtn.classList.toggle('open', open);
+    });
+    document.addEventListener('click', () => {
+      dropMenu.classList.remove('open');
+      dropBtn.classList.remove('open');
+    });
+    items.forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        const i = +el.dataset.i;
+        localStorage.setItem('selectedDramaIndex', i);
+        localStorage.setItem('selectedDrama', JSON.stringify(dramas[i]));
+        window.location.href = 'step2.html';
+      });
+    });
+
+    // 未登录点击
+    document.getElementById('navRight').addEventListener('click', () => {
+      if (!isLoggedIn) {
+        document.getElementById('loginModal').style.display = 'flex';
+      }
+    });
+
+    // ── 关系选项卡片 ──
+    const cards = document.querySelectorAll('.relation-card');
+    const customInputWrap = document.getElementById('customInputWrap');
+    const customInput = document.getElementById('customInput');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function updateNextBtn() {
+      if (!selectedRelation) { nextBtn.disabled = true; return; }
+      if (selectedRelation === '自定义') {
+        nextBtn.disabled = !customInput.value.trim();
+      } else {
+        nextBtn.disabled = false;
+      }
+    }
+
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        cards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedRelation = card.dataset.value;
+
+        if (selectedRelation === '自定义') {
+          customInputWrap.classList.add('show');
+          customInput.focus();
+        } else {
+          customInputWrap.classList.remove('show');
+          customInput.value = '';
+        }
+        updateNextBtn();
+      });
+    });
+
+    customInput.addEventListener('input', updateNextBtn);
+
+    // ── 下一步 ──
+    nextBtn.addEventListener('click', () => {
+      if (nextBtn.disabled) return;
+      const rawValue = selectedRelation === '自定义' ? customInput.value.trim() : selectedRelation;
+      // Dify workflow 只接受固定值，自定义内容在此处兜底转换为最近选项
+      const VALID_RELS = ['竹马', '师徒', '宿敌转恋人'];
+      const safeValue = VALID_RELS.includes(rawValue) ? rawValue : '竹马';
+      localStorage.setItem('novelRelationship', safeValue);
+      if (selectedRelation === '自定义') {
+        localStorage.setItem('novelRelationshipCustom', rawValue); // 原始值备存
+      }
+      window.location.href = 'step5c.html';
+    });
+
+    // ── 登录弹窗 ──
+    document.getElementById('loginClose').addEventListener('click', () => {
+      document.getElementById('loginModal').style.display = 'none';
+    });
+    document.getElementById('loginModal').addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+
+    let codeTimer = 0;
+    function sendCode() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      if (!/^1[3-9]\d{9}$/.test(phone)) { alert('请输入正确的手机号'); return; }
+      if (codeTimer > 0) return;
+      const btn = document.getElementById('sendCodeBtn');
+      codeTimer = 60;
+      btn.disabled = true;
+      const t = setInterval(() => {
+        codeTimer--;
+        btn.textContent = codeTimer + 's后重试';
+        if (codeTimer <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = '获取验证码'; }
+      }, 1000);
+      alert('验证码已发送（演示）');
+    }
+
+    function doLogin() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      const code = document.getElementById('codeInput').value.trim();
+      if (!phone || !code) { alert('请填写手机号和验证码'); return; }
+      // legacy phone login removed
+      document.getElementById('loginModal').style.display = 'none';
+      location.reload();
+    }
+  </script>
+
+<script>
+    async function sendCode() {
+      const email = document.getElementById("emailInput").value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById("loginTip").textContent = "请输入正确的邮箱地址"; return; }
+      const btn = document.getElementById("codeBtn");
+      btn.disabled = true; document.getElementById("loginTip").textContent = "";
+      try {
+        const r = await fetch("/api/send-email-code", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+        const d = await r.json();
+        if (!r.ok) { document.getElementById("loginTip").textContent = d.error||"发送失败"; btn.disabled=false; return; }
+        let t=60; btn.textContent=t+"s";
+        const ti=setInterval(()=>{ t--; btn.textContent=t+"s"; if(t<=0){clearInterval(ti);btn.disabled=false;btn.textContent="获取验证码";}},1000);
+      } catch(e){ document.getElementById("loginTip").textContent="网络错误"; btn.disabled=false; }
+    }
+    async function doLogin() {
+      const email=document.getElementById("emailInput").value.trim();
+      const code=document.getElementById("codeInput").value.trim();
+      if(!email||!code){document.getElementById("loginTip").textContent="请填写邮箱和验证码";return;}
+      const btn=document.getElementById("loginSubmitBtn");
+      btn.disabled=true; btn.textContent="验证中";
+      try {
+        const r=await fetch("/api/verify-email-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
+        const d=await r.json();
+        if(!r.ok){document.getElementById("loginTip").textContent=d.error||"验证失败";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";return;}
+        localStorage.setItem("isLoggedIn","true"); localStorage.setItem("userEmail",email);
+        document.getElementById("loginModal").style.display="none";
+      } catch(e){document.getElementById("loginTip").textContent="网络错误";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";}
+    }
+  </script>
+</body>
+</html>

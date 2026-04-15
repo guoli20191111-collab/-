@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>古风同人图 · AI 生成中</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+    }
+
+    .bg { position: fixed; inset: 0; z-index: 0; }
+    .bg-slide {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center top;
+      opacity: 1;
+      filter: blur(8px);
+      transform: scale(1.1);
+    }
+    .bg-mask {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,6,15,0.75) 0%,
+        rgba(8,6,15,0.5) 35%,
+        rgba(8,6,15,0.5) 65%,
+        rgba(8,6,15,0.75) 100%
+      );
+    }
+
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,5,16,0.82) 0%,
+        rgba(12,8,22,0.68) 100%
+      );
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      gap: 0;
+    }
+
+    .nav::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.15) 15%,
+        rgba(200,160,100,0.45) 40%,
+        rgba(220,180,120,0.55) 50%,
+        rgba(200,160,100,0.45) 60%,
+        rgba(200,160,100,0.15) 85%,
+        transparent 100%
+      );
+    }
+    .nav::before {
+      content: '';
+      position: absolute; bottom: -3px; left: 15%; right: 15%;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.08) 20%,
+        rgba(200,160,100,0.2) 50%,
+        rgba(200,160,100,0.08) 80%,
+        transparent 100%
+      );
+    }
+
+    .nav-logo {
+      display: flex; align-items: center;
+      text-decoration: none; flex-shrink: 0;
+      margin-right: 36px;
+      position: relative;
+    }
+    .logo-img { height: 72px; width: auto; display: block; }
+
+    .nav-center { position: relative; flex-shrink: 0; }
+
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,160,100,0.3);
+      border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit;
+      font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer;
+      transition: background 0.22s, border-color 0.22s, color 0.22s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .dropdown-btn:hover {
+      background: rgba(200,160,100,0.1);
+      border-color: rgba(200,160,100,0.65);
+      color: rgba(255,240,210,1);
+    }
+    .dropdown-btn.open {
+      background: rgba(200,160,100,0.12);
+      border-color: rgba(220,180,120,0.8);
+      color: #fff;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .dropdown-btn .btn-diamond {
+      font-size: 7px; color: rgba(200,160,100,0.6);
+      transition: color 0.22s;
+    }
+    .dropdown-btn:hover .btn-diamond,
+    .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow {
+      font-size: 8px; color: rgba(200,160,100,0.5);
+      transition: transform 0.2s, color 0.2s;
+      margin-left: 2px;
+    }
+    .dropdown-btn.open .arrow {
+      transform: rotate(180deg);
+      color: rgba(220,180,120,0.8);
+    }
+
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0;
+      min-width: 100%;
+      background: rgba(8,5,16,0.95);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open {
+      opacity: 1; pointer-events: auto;
+      transform: translateY(0);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px;
+      font-size: 13px; letter-spacing: 0.22em; color: rgba(255,240,210,0.5);
+      cursor: pointer; transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before {
+      content: '◆'; margin-right: 8px; font-size: 5px;
+      color: rgba(200,160,100,0.8); vertical-align: middle;
+    }
+
+    .nav-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(220,180,120,0.8);
+      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      margin-left: auto;
+      overflow: hidden;
+    }
+    .nav-avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .deco-corner {
+      position: fixed; z-index: 200;
+      pointer-events: none;
+    }
+    .deco-corner.bl {
+      bottom: 24px; left: 32px;
+      width: 60px; height: 60px;
+    }
+    .deco-corner.br {
+      bottom: 24px; right: 32px;
+      width: 60px; height: 60px;
+    }
+    .deco-corner svg { width: 100%; height: 100%; opacity: 0.35; }
+
+    .deco-vline {
+      position: fixed; top: 68px; bottom: 20px;
+      left: 50%; transform: translateX(-50%);
+      width: 1px; z-index: 50; pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(200,160,100,0.12) 20%,
+        rgba(200,160,100,0.18) 50%,
+        rgba(200,160,100,0.12) 80%,
+        transparent 100%
+      );
+    }
+
+    .main {
+      position: fixed; inset: 68px 0 0 0;
+      z-index: 100;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 48px 80px;
+    }
+
+    .ink-animation {
+      position: relative;
+      width: 280px; height: 280px;
+      margin-bottom: 60px;
+    }
+
+    .ink-circle {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      opacity: 0;
+      animation: inkPulse 3s ease-in-out infinite;
+    }
+
+    .ink-circle:nth-child(1) {
+      width: 280px; height: 280px;
+      background: radial-gradient(
+        circle,
+        rgba(200,160,100,0.15) 0%,
+        rgba(200,160,100,0.08) 40%,
+        transparent 70%
+      );
+      animation-delay: 0s;
+    }
+
+    .ink-circle:nth-child(2) {
+      width: 220px; height: 220px;
+      background: radial-gradient(
+        circle,
+        rgba(180,120,160,0.2) 0%,
+        rgba(180,120,160,0.1) 40%,
+        transparent 70%
+      );
+      animation-delay: 0.6s;
+    }
+
+    .ink-circle:nth-child(3) {
+      width: 160px; height: 160px;
+      background: radial-gradient(
+        circle,
+        rgba(200,160,100,0.25) 0%,
+        rgba(200,160,100,0.12) 40%,
+        transparent 70%
+      );
+      animation-delay: 1.2s;
+    }
+
+    .ink-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(220,180,120,0.3) 0%,
+        rgba(200,160,100,0.2) 50%,
+        transparent 100%
+      );
+      animation: inkRotate 8s linear infinite;
+    }
+
+    .ink-center::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(255,240,210,0.15) 0%,
+        rgba(200,160,100,0.1) 60%,
+        transparent 100%
+      );
+    }
+
+    @keyframes inkPulse {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.3);
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+    }
+
+    @keyframes inkRotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .waiting-text {
+      font-size: 18px; letter-spacing: 0.4em;
+      color: rgba(255,240,210,0.85);
+      text-align: center;
+      display: flex; align-items: center; gap: 12px;
+      animation: textFade 2s ease-in-out infinite;
+    }
+
+    .waiting-text .diamond {
+      font-size: 10px;
+      color: rgba(200,160,100,0.7);
+    }
+
+    @keyframes textFade {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    .waiting-hint {
+      margin-top: 20px;
+      font-size: 13px; letter-spacing: 0.3em;
+      color: rgba(255,240,210,0.4);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg">
+    <div class="bg-slide" style="background-image:url('assets/bg.PNG')"></div>
+    <div class="bg-mask"></div>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+
+    <div class="nav-avatar" id="navAvatar">
+      <img src="" alt="头像" id="avatarImg" />
+    </div>
+  </nav>
+
+  <div class="deco-vline"></div>
+
+  <main class="main">
+    <div class="ink-animation">
+      <div class="ink-circle"></div>
+      <div class="ink-circle"></div>
+      <div class="ink-circle"></div>
+      <div class="ink-center"></div>
+    </div>
+
+    <div class="waiting-text">
+      <span class="diamond">✦</span>
+      <span>正在为你穿越到古代</span>
+      <span class="diamond">✦</span>
+    </div>
+
+    <div class="waiting-hint">预计需要 10 ~ 20 秒</div>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    const dramas = [
+      { label:'《逐风玉恋》', bg:'assets/bg.PNG' },
+    ];
+
+    let curDrama = 0;
+
+    const dropBtn = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel = document.getElementById('dropLabel');
+    const items = document.querySelectorAll('.dropdown-item');
+    const avatarImg = document.getElementById('avatarImg');
+
+    const userPhoto = localStorage.getItem('userPhoto');
+    if (userPhoto) {
+      avatarImg.src = userPhoto;
+    }
+
+    curDrama = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
+    if (dramas[curDrama]) {
+      // dropLabel固定显示IP剧集
+      items.forEach((x, j) => x.classList.toggle('on', j === curDrama));
+    }
+
+    dropBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = dropMenu.classList.toggle('open');
+      dropBtn.classList.toggle('open', open);
+    });
+
+    document.addEventListener('click', () => {
+      dropMenu.classList.remove('open');
+      dropBtn.classList.remove('open');
+    });
+
+    items.forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const i = +el.dataset.i;
+        curDrama = i;
+        items.forEach((x, j) => x.classList.toggle('on', j === i));
+        // dropLabel固定显示IP剧集
+        dropMenu.classList.remove('open');
+        dropBtn.classList.remove('open');
+      });
+    });
+
+    const API_BASE = '';  // 同域，走 nginx 代理
+
+    function showLimitUI(remaining) {
+      document.querySelector('.ink-animation').style.display = 'none';
+      const wt = document.querySelector('.waiting-text');
+      const wh = document.querySelector('.waiting-hint');
+      wt.innerHTML = '<span style="color:rgba(220,160,80,0.9);font-size:18px;letter-spacing:0.3em;">免费次数已用完</span>';
+      wh.innerHTML = `每个 IP 最多免费生成 2 次，你已用完全部次数。<br>
+        <span style="font-size:13px;color:rgba(200,160,100,0.5);letter-spacing:0.15em;">如需继续使用，请联系管理员开通权限。</span>`;
+      wh.style.lineHeight = '2';
+      wh.style.marginTop = '20px';
+    }
+
+    async function startGeneration() {
+      const userPhoto = localStorage.getItem('userPhoto');
+      const characterName = localStorage.getItem('characterName') || '云笙';
+      const dramaIndex = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
+
+      if (!userPhoto) {
+        console.error('未找到用户照片');
+        alert('未找到照片，请重新上传');
+        setTimeout(() => { window.location.href = 'step3.html'; }, 1000);
+        return;
+      }
+
+      // ── IP 次数检查 ──
+      try {
+        const limitRes = await fetch(API_BASE + '/api/check-limit');
+        const limitData = await limitRes.json();
+        if (!limitData.allowed) {
+          showLimitUI(0);
+          return;
+        }
+      } catch (e) {
+        console.warn('限制检查失败，跳过:', e.message);
+      }
+
+      try {
+        const photoBase64 = userPhoto.includes(',') ? userPhoto.split(',')[1] : userPhoto;
+
+        const result = await generateAncientStyleImage(photoBase64, dramaIndex, characterName);
+
+        if (result.success && result.imageUrl) {
+          localStorage.setItem('generatedImage', result.imageUrl);
+          localStorage.setItem('generatedPrompt', result.prompt || '');
+          localStorage.setItem('generatedStyle', result.style || '');
+
+          // ── 生成成功后记录次数 ──
+          try {
+            await fetch(API_BASE + '/api/record-generation', { method: 'POST' });
+          } catch (e) {
+            console.warn('记录次数失败:', e.message);
+          }
+
+          setTimeout(() => { window.location.href = 'step4b.html'; }, 500);
+        } else {
+          console.error('生成失败:', result.error);
+          alert('生成失败: ' + (result.error || '未知错误'));
+          setTimeout(() => { window.location.href = 'step3.html'; }, 1500);
+        }
+      } catch (error) {
+        console.error('生成过程出错:', error);
+        alert('生成过程出错: ' + error.message);
+        setTimeout(() => { window.location.href = 'step3.html'; }, 1500);
+      }
+    }
+
+    startGeneration();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>古风同人图 · 选择剧集</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+    }
+
+    /* ─── 全屏背景 ─── */
+    .bg { 
+      position: fixed; inset: 0; z-index: 0;
+      overflow: hidden;
+    }
+    
+    .bg-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+    
+    .bg-video.active {
+      opacity: 1;
+    }
+    
+
+
+    /* ─── 导航栏 ─── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 48px;
+      background: linear-gradient(
+        to bottom,
+        rgba(8,5,16,0.82) 0%,
+        rgba(12,8,22,0.68) 100%
+      );
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      gap: 0;
+    }
+
+    /* 导航底部装饰线：双线 */
+    .nav::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.15) 15%,
+        rgba(200,160,100,0.45) 40%,
+        rgba(220,180,120,0.55) 50%,
+        rgba(200,160,100,0.45) 60%,
+        rgba(200,160,100,0.15) 85%,
+        transparent 100%
+      );
+    }
+    .nav::before {
+      content: '';
+      position: absolute; bottom: -3px; left: 15%; right: 15%;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(200,160,100,0.08) 20%,
+        rgba(200,160,100,0.2) 50%,
+        rgba(200,160,100,0.08) 80%,
+        transparent 100%
+      );
+    }
+
+    /* Logo */
+    .nav-logo {
+      display: flex; align-items: center;
+      text-decoration: none; flex-shrink: 0;
+      margin-right: 36px;
+      position: relative;
+    }
+    .logo-img { height: 72px; width: auto; display: block; }
+
+    /* 导航中部下拉 */
+    .nav-center { position: relative; flex-shrink: 0; }
+
+    .dropdown-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0 22px; height: 36px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200,160,100,0.3);
+      border-radius: 6px;
+      color: rgba(255,240,210,0.75); font-family: inherit;
+      font-size: 15px; letter-spacing: 0.22em;
+      cursor: pointer;
+      transition: background 0.22s, border-color 0.22s, color 0.22s;
+      white-space: nowrap;
+      position: relative;
+    }
+    .dropdown-btn:hover {
+      background: rgba(200,160,100,0.1);
+      border-color: rgba(200,160,100,0.65);
+      color: rgba(255,240,210,1);
+    }
+    .dropdown-btn.open {
+      background: rgba(200,160,100,0.12);
+      border-color: rgba(220,180,120,0.8);
+      color: #fff;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .dropdown-btn .btn-diamond {
+      font-size: 7px; color: rgba(200,160,100,0.6);
+      transition: color 0.22s;
+    }
+    .dropdown-btn:hover .btn-diamond,
+    .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow {
+      font-size: 8px; color: rgba(200,160,100,0.5);
+      transition: transform 0.2s, color 0.2s;
+      margin-left: 2px;
+    }
+    .dropdown-btn.open .arrow {
+      transform: rotate(180deg);
+      color: rgba(220,180,120,0.8);
+    }
+
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0;
+      min-width: 100%;
+      background: rgba(8,5,16,0.95);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    .dropdown-menu.open {
+      opacity: 1; pointer-events: auto;
+      transform: translateY(0);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; justify-content: center;
+      padding: 11px 20px;
+      font-size: 13px; letter-spacing: 0.22em; color: rgba(255,240,210,0.5);
+      cursor: pointer; transition: color 0.15s, background 0.15s;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before {
+      content: '◆'; margin-right: 8px; font-size: 5px;
+      color: rgba(200,160,100,0.8); vertical-align: middle;
+    }
+
+    /* 右侧头像 */
+    .nav-avatar-wrapper {
+      margin-left: auto;
+      position: relative;
+    }
+    
+    .nav-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(200,160,100,0.4);
+      cursor: pointer;
+      transition: all 0.22s;
+      object-fit: cover;
+    }
+    
+    .nav-avatar:hover {
+      border-color: rgba(220,180,120,0.8);
+      box-shadow: 0 0 12px rgba(200,160,100,0.3);
+    }
+    
+    .avatar-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 140px;
+      background: rgba(8,5,16,0.95);
+      border: 1px solid rgba(200,160,100,0.35);
+      border-radius: 6px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.18s, transform 0.18s;
+    }
+    
+    .avatar-dropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    
+    .avatar-dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 20px;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      color: rgba(255,240,210,0.6);
+      cursor: default;
+      border-bottom: 1px solid rgba(200,160,100,0.1);
+    }
+    
+    .avatar-dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .avatar-dropdown-item.login-btn {
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+    }
+    
+    .avatar-dropdown-item.login-btn:hover {
+      color: rgba(255,240,210,0.95);
+      background: rgba(200,160,100,0.08);
+    }
+    
+
+
+    /* ─── 左下角装饰 ─── */
+    .deco-corner {
+      position: fixed; z-index: 200;
+      pointer-events: none;
+    }
+    .deco-corner.bl {
+      bottom: 24px; left: 32px;
+      width: 60px; height: 60px;
+    }
+    .deco-corner.br {
+      bottom: 24px; right: 32px;
+      width: 60px; height: 60px;
+    }
+    .deco-corner svg { width: 100%; height: 100%; opacity: 0.35; }
+
+
+
+
+
+    /* ─── 中央剧集入口 ─── */
+    .center-entry {
+      position: fixed;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: fadeInUp 0.9s ease-out 0.3s both;
+    }
+    .entry-label {
+      font-size: 12px;
+      letter-spacing: 0.45em;
+      color: rgba(200,160,100,0.55);
+    }
+    .entry-title {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      color: rgba(255,240,210,0.95);
+      text-shadow: 0 2px 24px rgba(0,0,0,0.8);
+      white-space: nowrap;
+    }
+    .entry-divider {
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(200,160,100,0.5), transparent);
+    }
+    .entry-btn {
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 48px;
+      height: 54px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.22), rgba(180,120,80,0.18));
+      border: 1px solid rgba(220,180,120,0.65);
+      border-radius: 8px;
+      color: rgba(255,240,210,0.95);
+      font-family: inherit;
+      font-size: 18px;
+      letter-spacing: 0.4em;
+      cursor: pointer;
+      transition: all 0.28s ease;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 24px rgba(200,160,100,0.12);
+      white-space: nowrap;
+    }
+    .entry-btn:hover {
+      background: linear-gradient(135deg, rgba(220,180,120,0.32), rgba(200,140,80,0.28));
+      border-color: rgba(240,200,140,0.9);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 40px rgba(200,160,100,0.25);
+      transform: translateY(-3px);
+    }
+    .entry-btn-diamond { font-size: 10px; color: rgba(220,180,120,0.8); }
+    .entry-btn-arrow { font-size: 16px; color: rgba(220,180,120,0.7); transition: transform 0.28s; }
+    .entry-btn:hover .entry-btn-arrow { transform: translateX(4px); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(24px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* ─── 移动端适配 ─── */
+    @media (max-width: 768px) {
+      /* 视频上移，让人脸出现在画面中 */
+      .bg-video {
+        object-position: center 15%;
+      }
+
+      /* 导航缩小 */
+      .nav { padding: 0 16px; height: 52px; }
+      .logo-img { height: 48px; }
+      .dropdown-btn { font-size: 13px; padding: 0 14px; height: 32px; }
+
+      /* 角色入口文字缩小，按钮适配 */
+      .center-entry { bottom: 12%; gap: 8px; width: 90%; }
+      .entry-title { font-size: 22px; letter-spacing: 0.25em; }
+      .entry-btn { padding: 0 32px; height: 48px; font-size: 16px; letter-spacing: 0.3em; }
+
+      /* 头像缩小 */
+      .nav-avatar { width: 32px; height: 32px; }
+    }
+
+    /* ─── 底部进度条 ─── */
+    .prog {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+      height: 2px; background: rgba(255,255,255,0.04);
+    }
+    .prog-fill {
+      height: 100%; width: 33.33%;
+      background: linear-gradient(to right, rgba(180,120,160,0.8), rgba(200,160,100,0.8));
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg">
+    <video class="bg-video active" autoplay muted playsinline preload="auto">
+      <source src="assets/shipin/2.mp4" type="video/mp4">
+    </video>
+    <video class="bg-video" muted playsinline preload="none">
+      <source src="assets/shipin/3.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <picture>
+        <source srcset="assets/logo.webp" type="image/webp">
+        <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+      </picture>
+    </a>
+
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item on" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+
+    <div class="nav-avatar-wrapper">
+      <img class="nav-avatar" id="avatarImg" src="assets/touxiang.png" alt="头像" />
+      <div class="avatar-dropdown" id="avatarDropdown">
+        <div class="avatar-dropdown-item" id="navStatusText">未登录</div>
+        <div class="avatar-dropdown-item login-btn" id="loginBtn">去登录</div>
+        <div class="avatar-dropdown-item logout-btn" id="logoutBtn" style="display:none;color:#e07070;">退出登录</div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="prog"><div class="prog-fill"></div></div>
+
+  <!-- 中央剧集入口 -->
+  <div class="center-entry" id="centerEntry">
+    <div class="entry-label">当前剧集</div>
+    <div class="entry-title">《逐风玉恋》</div>
+    <div class="entry-divider"></div>
+    <button class="entry-btn" id="enterBtn">
+      <span class="entry-btn-diamond">✦</span>
+      <span>进入剧集</span>
+      <span class="entry-btn-arrow">→</span>
+    </button>
+  </div>
+
+  <!-- 退出登录确认弹窗 -->
+  <div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:360px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:36px 32px;font-family:'PingFang SC','Microsoft YaHei','STSong',serif;text-align:center;">
+      <div style="font-size:15px;color:rgba(255,240,210,0.9);letter-spacing:0.12em;line-height:1.8;margin-bottom:28px;">退出登录后您的记录将不再保留</div>
+      <div style="display:flex;gap:12px;">
+        <button onclick="document.getElementById('logoutModal').style.display='none'" style="flex:1;height:44px;background:rgba(255,255,255,0.05);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(200,160,100,0.8);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">取 消</button>
+        <button onclick="confirmLogout()" style="flex:1;height:44px;background:rgba(180,60,60,0.2);border:1px solid rgba(220,80,80,0.5);border-radius:6px;color:rgba(255,160,160,0.9);font-family:inherit;font-size:14px;letter-spacing:0.2em;cursor:pointer;">确认退出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 登录弹窗 -->
+  <div id="loginModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="width:420px;background:rgba(8,5,16,0.97);border:1px solid rgba(200,160,100,0.4);border-radius:12px;padding:40px 36px;position:relative;font-family:'PingFang SC','Microsoft YaHei','STSong',serif;">
+      <button onclick="closeLoginModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(200,160,100,0.6);font-size:20px;cursor:pointer;">×</button>
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:13px;color:rgba(200,160,100,0.6);letter-spacing:0.3em;margin-bottom:8px;">拾梦录</div>
+        <div style="font-size:20px;font-weight:300;color:rgba(255,240,210,0.95);letter-spacing:0.2em;">保存你的古风形象</div>
+        <div style="font-size:13px;color:rgba(200,160,100,0.5);letter-spacing:0.15em;margin-top:6px;">开启专属故事</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;gap:0;margin-bottom:10px;">
+          <input id="emailInput" type="email" placeholder="请输入邮箱地址" style="flex:1;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-right:none;border-radius:6px 0 0 6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+          <button id="codeBtn" style="width:110px;height:46px;background:rgba(200,160,100,0.12);border:1px solid rgba(200,160,100,0.3);border-radius:0 6px 6px 0;color:rgba(220,180,120,0.9);font-family:inherit;font-size:13px;cursor:pointer;white-space:nowrap;" onclick="sendCode()">获取验证码</button>
+        </div>
+        <input id="codeInput" type="text" placeholder="请输入验证码" maxlength="6" style="width:100%;height:46px;background:rgba(255,255,255,0.04);border:1px solid rgba(200,160,100,0.3);border-radius:6px;color:rgba(255,240,210,0.9);font-family:inherit;font-size:14px;padding:0 14px;outline:none;"/>
+      </div>
+      <div id="loginTip" style="font-size:12px;color:#e07070;letter-spacing:0.08em;margin-bottom:8px;min-height:18px;text-align:center;"></div>
+      <button id="loginSubmitBtn" onclick="doLogin()" style="width:100%;height:50px;background:linear-gradient(135deg,rgba(200,160,100,0.25),rgba(180,120,80,0.2));border:1px solid rgba(220,180,120,0.6);border-radius:6px;color:rgba(255,240,210,0.95);font-family:inherit;font-size:16px;letter-spacing:0.35em;cursor:pointer;">✦ 登 录 ✦</button>
+    </div>
+  </div>
+
+  <script>
+    let _loginCallback = null; // 登录成功后的回调
+
+    function openLoginModal(callback) {
+      _loginCallback = callback || null;
+      document.getElementById('loginModal').style.display = 'flex';
+      document.getElementById('loginTip').textContent = '';
+      document.getElementById('emailInput').value = '';
+      document.getElementById('codeInput').value = '';
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+      _loginCallback = null;
+    }
+
+    async function sendCode() {
+      const email = document.getElementById('emailInput').value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById('loginTip').textContent = '请输入正确的邮箱地址';
+        return;
+      }
+      const btn = document.getElementById('codeBtn');
+      btn.disabled = true;
+      document.getElementById('loginTip').textContent = '';
+      try {
+        const res = await fetch('/api/send-email-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('loginTip').textContent = data.error || '发送失败';
+          btn.disabled = false;
+          return;
+        }
+        // 60秒倒计时
+        let t = 60;
+        btn.textContent = t + 's';
+        const timer = setInterval(() => {
+          t--;
+          btn.textContent = t + 's';
+          if (t <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+        }, 1000);
+      } catch (e) {
+        document.getElementById('loginTip').textContent = '网络错误，请重试';
+        btn.disabled = false;
+      }
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('emailInput').value.trim();
+      const code  = document.getElementById('codeInput').value.trim();
+      if (!email || !code) {
+        document.getElementById('loginTip').textContent = '请填写邮箱和验证码';
+        return;
+      }
+      const btn = document.getElementById('loginSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = '验证中…';
+      try {
+        const res = await fetch('/api/verify-email-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('loginTip').textContent = data.error || '验证失败';
+          btn.disabled = false;
+          btn.textContent = '✦ 登 录 ✦';
+          return;
+        }
+        // 登录成功
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userEmail', email);
+        updateNavLoginState();
+        closeLoginModal();
+        if (_loginCallback) _loginCallback();
+      } catch (e) {
+        document.getElementById('loginTip').textContent = '网络错误，请重试';
+        btn.disabled = false;
+        btn.textContent = '✦ 登 录 ✦';
+      }
+    }
+  </script>
+
+  <script>
+    const dramas = [
+      { label:'《逐风玉恋》', bg:'s0' },
+    ];
+
+    let cur = 0;
+    const dropBtn  = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    const dropLabel= document.getElementById('dropLabel');
+    const items    = document.querySelectorAll('.dropdown-item');
+    const videos   = document.querySelectorAll('.bg-video');
+    const avatarImg = document.getElementById('avatarImg');
+    const avatarDropdown = document.getElementById('avatarDropdown');
+    const loginBtn = document.getElementById('loginBtn');
+    let currentVideoIndex = 0;
+
+    videos.forEach((video, index) => {
+      video.addEventListener('loadeddata', () => {
+        if (index === 0) {
+          video.play();
+        }
+      });
+
+      video.addEventListener('ended', () => {
+        if (index === currentVideoIndex) {
+          video.classList.remove('active');
+          
+          currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+          const nextVideo = videos[currentVideoIndex];
+          
+          nextVideo.currentTime = 0;
+          nextVideo.classList.add('active');
+          nextVideo.load();
+          nextVideo.play();
+        }
+      });
+    });
+
+    dropBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = dropMenu.classList.toggle('open');
+      dropBtn.classList.toggle('open', open);
+    });
+
+    document.addEventListener('click', () => {
+      dropMenu.classList.remove('open');
+      dropBtn.classList.remove('open');
+    });
+
+    items.forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const i = +el.dataset.i;
+        cur = i;
+        items.forEach((x, j) => x.classList.toggle('on', j === i));
+        // dropLabel固定显示IP剧集
+        dropMenu.classList.remove('open');
+        dropBtn.classList.remove('open');
+        
+        localStorage.setItem('selectedDrama', JSON.stringify(dramas[i]));
+        localStorage.setItem('selectedDramaIndex', i);
+        window.location.href = 'step2.html';
+      });
+    });
+
+    function updateNavLoginState() {
+      const loggedIn = !!(localStorage.getItem('isLoggedIn') && localStorage.getItem('userEmail'));
+      const email = localStorage.getItem('userEmail') || '';
+      document.getElementById('navStatusText').textContent = loggedIn ? email : '未登录';
+      document.getElementById('loginBtn').style.display = loggedIn ? 'none' : '';
+      document.getElementById('logoutBtn').style.display = loggedIn ? '' : 'none';
+    }
+    updateNavLoginState();
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      document.getElementById('avatarDropdown').classList.remove('open');
+      document.getElementById('logoutModal').style.display = 'flex';
+    });
+
+    function confirmLogout() {
+      localStorage.clear();
+      window.location.href = 'step1.html';
+    }
+
+    avatarImg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = avatarDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', () => {
+      avatarDropdown.classList.remove('open');
+    });
+
+    loginBtn.addEventListener('click', () => {
+      openLoginModal(null);
+    });
+
+    // 中央进入按钮：未登录先弹登录框，登录成功后跳转
+    document.getElementById('enterBtn').addEventListener('click', () => {
+      const go = () => {
+        localStorage.setItem('selectedDrama', JSON.stringify(dramas[0]));
+        localStorage.setItem('selectedDramaIndex', 0);
+        window.location.href = 'step2.html';
+      };
+      if (localStorage.getItem('isLoggedIn') && localStorage.getItem('userEmail')) {
+        go();
+      } else {
+        openLoginModal(go);
+      }
+    });
+  </script>
+</body>
+</html>

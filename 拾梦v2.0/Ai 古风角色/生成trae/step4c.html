@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾梦录 · 选择图片版本</title>
+  <style>
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'STSong', 'SimSun', serif;
+      background: #08060f;
+      color: rgba(255,240,210,0.9);
+    }
+
+    /* ── 导航栏 ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      height: 68px; display: flex; align-items: center; padding: 0 48px;
+      background: linear-gradient(to bottom, rgba(8,5,16,0.92) 0%, rgba(12,8,22,0.78) 100%);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    }
+    .nav::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.15) 15%, rgba(200,160,100,0.45) 40%, rgba(220,180,120,0.55) 50%, rgba(200,160,100,0.45) 60%, rgba(200,160,100,0.15) 85%, transparent 100%); }
+    .nav::before { content: ''; position: absolute; bottom: -3px; left: 15%; right: 15%; height: 1px; background: linear-gradient(to right, transparent 0%, rgba(200,160,100,0.08) 20%, rgba(200,160,100,0.2) 50%, rgba(200,160,100,0.08) 80%, transparent 100%); }
+    .nav-logo { display: flex; align-items: center; text-decoration: none; flex-shrink: 0; margin-right: 36px; }
+    .logo-img { height: 72px; width: auto; display: block; }
+    .nav-center { position: relative; flex-shrink: 0; }
+    .dropdown-btn { display: flex; align-items: center; gap: 10px; padding: 0 22px; height: 36px; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.3); border-radius: 6px; color: rgba(255,240,210,0.75); font-family: inherit; font-size: 15px; letter-spacing: 0.22em; cursor: pointer; transition: all 0.22s; white-space: nowrap; }
+    .dropdown-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.65); color: rgba(255,240,210,1); }
+    .dropdown-btn.open { background: rgba(200,160,100,0.12); border-color: rgba(220,180,120,0.8); color: #fff; border-radius: 6px 6px 0 0; }
+    .dropdown-btn .btn-diamond { font-size: 7px; color: rgba(200,160,100,0.6); }
+    .dropdown-btn:hover .btn-diamond, .dropdown-btn.open .btn-diamond { color: rgba(220,180,120,0.9); }
+    .dropdown-btn .arrow { font-size: 8px; color: rgba(200,160,100,0.5); transition: transform 0.2s; margin-left: 2px; }
+    .dropdown-btn.open .arrow { transform: rotate(180deg); color: rgba(220,180,120,0.8); }
+    .dropdown-menu { position: absolute; top: 100%; left: 0; min-width: 100%; background: rgba(8,5,16,0.95); border: 1px solid rgba(200,160,100,0.35); border-top: none; border-radius: 0 0 6px 6px; backdrop-filter: blur(24px); overflow: hidden; opacity: 0; pointer-events: none; transform: translateY(-4px); transition: opacity 0.18s, transform 0.18s; }
+    .dropdown-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .dropdown-item { display: flex; align-items: center; justify-content: center; padding: 11px 20px; font-size: 13px; letter-spacing: 0.22em; color: rgba(255,240,210,0.5); cursor: pointer; transition: color 0.15s, background 0.15s; border-bottom: 1px solid rgba(200,160,100,0.1); }
+    .dropdown-item:last-child { border-bottom: none; }
+    .dropdown-item:hover { color: rgba(255,240,210,0.95); background: rgba(200,160,100,0.08); }
+    .dropdown-item.on { color: rgba(255,240,210,0.95); }
+    .dropdown-item.on::before { content: '◆'; margin-right: 8px; font-size: 5px; color: rgba(200,160,100,0.8); vertical-align: middle; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .nav-avatar { width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(220,180,120,0.8); background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-login-text { font-size: 13px; letter-spacing: 0.15em; color: rgba(200,160,100,0.7); white-space: nowrap; }
+
+    /* ── 主布局 ── */
+    .page { position: fixed; inset: 68px 0 0 0; display: flex; max-width: 1100px; margin: 0 auto; }
+
+    .page-blur-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background-size: cover; background-position: center;
+      filter: blur(24px) brightness(0.35); transform: scale(1.08);
+    }
+
+    .image-side { width: 55%; position: relative; overflow: hidden; cursor: pointer; z-index: 1; }
+    .image-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .image-wrap img { height: 100%; width: auto; max-width: 100%; object-fit: contain; position: relative; z-index: 1; transition: opacity 0.3s ease; }
+    .image-side:hover .image-wrap img { transform: scale(1.015); transition: transform 0.4s ease, opacity 0.3s ease; }
+
+    .panel-side {
+      width: 45%; display: flex; align-items: center; justify-content: center;
+      padding: 48px 24px; background: transparent; border-left: none;
+      position: relative; z-index: 1;
+    }
+    .panel {
+      width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 24px;
+      background: rgba(8,6,15,0.55);
+      border: 1px solid rgba(200,160,100,0.2); border-radius: 12px;
+      padding: 36px 32px;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    }
+
+    .panel-step { font-size: 12px; font-weight: 300; color: rgba(200,160,100,0.55); letter-spacing: 0.35em; }
+    .panel-title { font-size: 22px; font-weight: 300; color: rgba(255,240,210,0.95); letter-spacing: 0.12em; display: flex; align-items: center; gap: 10px; }
+    .panel-title .gold { color: rgba(220,180,120,0.9); font-size: 10px; }
+    .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(200,160,100,0.3), transparent); }
+    .panel-desc { font-size: 13px; color: rgba(255,240,210,0.4); letter-spacing: 0.18em; }
+
+    /* 版本选择卡片 */
+    .tier-cards { display: flex; flex-direction: column; gap: 14px; }
+    .tier-card {
+      position: relative;
+      border: 2px solid rgba(200,160,100,0.15); border-radius: 10px;
+      padding: 20px 18px;
+      cursor: pointer; transition: all 0.25s;
+      background: rgba(255,255,255,0.03);
+    }
+    .tier-card:hover { border-color: rgba(200,160,100,0.45); background: rgba(200,160,100,0.04); }
+    .tier-card.selected { border-color: rgba(220,180,120,0.85); box-shadow: 0 0 16px rgba(200,160,100,0.2); background: rgba(200,160,100,0.06); }
+    .tier-card .card-check {
+      position: absolute; top: 12px; right: 12px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(200,160,100,0.85);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: rgba(8,6,15,0.95);
+      opacity: 0; transition: opacity 0.2s; font-weight: 700;
+    }
+    .tier-card.selected .card-check { opacity: 1; }
+    .tier-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .tier-badge {
+      padding: 2px 10px; border-radius: 4px;
+      font-size: 11px; letter-spacing: 0.12em; font-weight: 600;
+    }
+    .tier-badge.free { background: rgba(120,200,120,0.15); color: rgba(120,200,120,0.9); border: 1px solid rgba(120,200,120,0.3); }
+    .tier-badge.paid { background: rgba(220,180,120,0.15); color: rgba(220,180,120,0.9); border: 1px solid rgba(220,180,120,0.3); }
+    .tier-price { font-size: 13px; color: rgba(255,240,210,0.5); letter-spacing: 0.1em; }
+    .tier-price .amount { font-size: 18px; font-weight: 600; color: rgba(220,180,120,0.95); }
+    .tier-title { font-size: 15px; color: rgba(255,240,210,0.85); letter-spacing: 0.15em; margin-bottom: 6px; }
+    .tier-desc { font-size: 12px; color: rgba(255,240,210,0.35); letter-spacing: 0.1em; line-height: 1.6; }
+    .tier-tag {
+      display: inline-block; margin-top: 6px;
+      padding: 2px 8px; border-radius: 3px;
+      font-size: 10px; letter-spacing: 0.1em;
+      background: rgba(200,160,100,0.1); color: rgba(200,160,100,0.6);
+      border: 1px solid rgba(200,160,100,0.15);
+    }
+
+    .download-btn {
+      height: 50px;
+      background: linear-gradient(135deg, rgba(200,160,100,0.85) 0%, rgba(180,130,70,0.85) 100%);
+      border: none; border-radius: 8px;
+      color: rgba(8,6,15,0.95); font-family: inherit;
+      font-size: 16px; letter-spacing: 0.3em; font-weight: 600;
+      cursor: pointer; transition: all 0.25s;
+    }
+    .download-btn:hover {
+      background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95));
+      box-shadow: 0 4px 20px rgba(200,160,100,0.35); transform: translateY(-1px);
+    }
+
+    .continue-btn {
+      height: 44px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.3); border-radius: 8px;
+      color: rgba(255,240,210,0.8); font-family: inherit;
+      font-size: 14px; letter-spacing: 0.2em;
+      cursor: pointer; transition: all 0.22s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .continue-btn:hover { background: rgba(200,160,100,0.1); border-color: rgba(200,160,100,0.55); color: rgba(255,240,210,1); }
+
+    /* 全屏 */
+    .fullscreen { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; cursor: pointer; }
+    .fullscreen.active { display: flex; }
+    .fullscreen img { max-width: 95%; max-height: 95%; object-fit: contain; }
+    .fullscreen-close { position: absolute; top: 32px; right: 32px; width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(200,160,100,0.4); display: flex; align-items: center; justify-content: center; color: rgba(255,240,210,0.8); font-size: 24px; cursor: pointer; transition: all 0.25s; }
+    .fullscreen-close:hover { background: rgba(200,160,100,0.2); transform: rotate(90deg); }
+
+    /* 登录弹窗 */
+    .login-modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+    .login-card { width: 420px; background: rgba(12,8,22,0.96); border: 1px solid rgba(200,160,100,0.3); border-radius: 16px; padding: 48px 44px 44px; position: relative; }
+    .login-close { position: absolute; top: 18px; right: 22px; font-size: 20px; color: rgba(255,240,210,0.35); cursor: pointer; transition: color 0.2s; line-height: 1; }
+    .login-close:hover { color: rgba(255,240,210,0.8); }
+    .login-title { font-size: 20px; letter-spacing: 0.3em; font-weight: 600; color: rgba(255,240,210,0.95); text-align: center; margin-bottom: 6px; }
+    .login-subtitle { font-size: 12px; letter-spacing: 0.2em; color: rgba(200,160,100,0.5); text-align: center; margin-bottom: 32px; }
+    .login-divider { height: 1px; margin-bottom: 28px; background: linear-gradient(to right, transparent, rgba(200,160,100,0.25), transparent); }
+    .login-field { margin-bottom: 16px; }
+    .login-field input { width: 100%; height: 46px; padding: 0 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,100,0.2); border-radius: 8px; color: rgba(255,240,210,0.9); font-family: inherit; font-size: 14px; letter-spacing: 0.08em; outline: none; transition: border-color 0.2s; }
+    .login-field input:focus { border-color: rgba(200,160,100,0.55); }
+    .login-field input::placeholder { color: rgba(255,240,210,0.22); }
+    .login-code-row { display: flex; gap: 10px; }
+    .login-code-row input { flex: 1; }
+    .send-code-btn { flex-shrink: 0; height: 46px; padding: 0 16px; background: rgba(200,160,100,0.12); border: 1px solid rgba(200,160,100,0.35); border-radius: 8px; color: rgba(200,160,100,0.85); font-family: inherit; font-size: 13px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .send-code-btn:hover { background: rgba(200,160,100,0.2); }
+    .login-btn { width: 100%; height: 48px; margin-top: 8px; background: linear-gradient(135deg, rgba(200,160,100,0.85), rgba(180,130,70,0.85)); border: none; border-radius: 8px; color: rgba(8,6,15,0.9); font-family: inherit; font-size: 16px; letter-spacing: 0.3em; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .login-btn:hover { background: linear-gradient(135deg, rgba(220,180,120,0.95), rgba(200,155,85,0.95)); }
+    .login-or { text-align: center; font-size: 12px; color: rgba(255,240,210,0.2); letter-spacing: 0.2em; margin: 20px 0; }
+    .wechat-btn { width: 100%; height: 46px; background: rgba(7,193,96,0.12); border: 1px solid rgba(7,193,96,0.3); border-radius: 8px; color: rgba(7,193,96,0.85); font-family: inherit; font-size: 14px; letter-spacing: 0.2em; cursor: pointer; transition: all 0.2s; }
+    .wechat-btn:hover { background: rgba(7,193,96,0.2); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">
+      <img class="logo-img" src="assets/logo.png" alt="拾梦录" />
+    </a>
+    <div class="nav-center">
+      <button class="dropdown-btn" id="dropBtn">
+        <span class="btn-diamond">◆</span>
+        <span id="dropLabel">IP剧集</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="dropMenu">
+        <div class="dropdown-item" data-i="0">《逐风玉恋》</div>
+      </div>
+    </div>
+    <div class="nav-right" id="navRight">
+      <div class="nav-avatar">
+        <img src="assets/touxiang.png" alt="头像" id="avatarImg" />
+      </div>
+      <span class="nav-login-text" id="navLoginText">未登录</span>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-blur-bg" id="blurBg"></div>
+    <div class="image-side" id="imageSide">
+      <div class="image-wrap">
+        <img id="mainImg" src="assets/moren.png" alt="古风形象" />
+      </div>
+    </div>
+
+    <div class="panel-side">
+      <div class="panel">
+        <div>
+          <div class="panel-step">第 二 步 · 选 择 版 本</div>
+          <div class="panel-title">
+            <span class="gold">✦</span>
+            <span>选择图片版本</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="panel-desc">选择下载版本</div>
+
+        <div class="tier-cards">
+          <!-- 免费版 -->
+          <div class="tier-card selected" data-tier="free">
+            <span class="card-check">✓</span>
+            <div class="tier-header">
+              <span class="tier-badge free">免费</span>
+            </div>
+            <div class="tier-title">720p 标清版</div>
+            <div class="tier-desc">含「拾梦录」水印，可直接下载</div>
+            <span class="tier-tag">适合社交分享</span>
+          </div>
+          <!-- 付费版 -->
+          <div class="tier-card" data-tier="paid">
+            <span class="card-check">✓</span>
+            <div class="tier-header">
+              <span class="tier-badge paid">高清</span>
+              <span class="tier-price"><span class="amount">¥0.9</span></span>
+            </div>
+            <div class="tier-title">1080p 高清无水印</div>
+            <div class="tier-desc">无水印高清大图，可下载保存</div>
+            <span class="tier-tag">适合收藏 / 打印</span>
+          </div>
+        </div>
+
+        <button class="download-btn" id="downloadBtn">↓ 免费下载 720p</button>
+        <button class="continue-btn" id="continueBtn">继续生成同人文 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fullscreen" id="fullscreen">
+    <div class="fullscreen-close" id="closeBtn">×</div>
+    <img id="fullscreenImg" src="" alt="" />
+  </div>
+
+  <div class="login-modal" id="loginModal">
+    <div class="login-card">
+      <span class="login-close" id="loginClose">✕</span>
+      <div class="login-title">登录拾梦录</div>
+      <div class="login-subtitle">✦ 解锁完整古风体验 ✦</div>
+      <div class="login-divider"></div>
+      <div class="login-field">
+        <input type="tel" id="phoneInput" placeholder="请输入手机号" maxlength="11" />
+      </div>
+      <div class="login-field">
+        <div class="login-code-row">
+          <input type="text" id="codeInput" placeholder="请输入验证码" maxlength="6" />
+          <button class="send-code-btn" id="sendCodeBtn" onclick="sendCode()">获取验证码</button>
+        </div>
+      </div>
+      <button class="login-btn" onclick="doLogin()">登 录</button>
+      <div class="login-or">— 或 —</div>
+      <button class="wechat-btn" onclick="doLogin()">微信一键登录</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const dramas = ['《长相思》','《梦华录》','《琅琊榜》'];
+    const idx = parseInt(localStorage.getItem('selectedDramaIndex') || '0');
+    const isLoggedIn = !!(localStorage.getItem('userEmail') && (localStorage.getItem('userPhone') || localStorage.getItem('isLoggedIn')));
+    let selectedVersion = 0;
+
+    const genImg = localStorage.getItem('generatedImage') || 'assets/moren.png';
+    const versions = [genImg, genImg, genImg, genImg];
+
+    // 导航
+    document.getElementById('dropLabel').textContent = dramas[idx] || dramas[0];
+    document.querySelectorAll('.dropdown-item').forEach((el, i) => el.classList.toggle('on', i === idx));
+
+    // 头像
+    const userPhoto = localStorage.getItem('userPhoto');
+    if (isLoggedIn && userPhoto) { document.getElementById('avatarImg').src = userPhoto; }
+    else { document.getElementById('avatarImg').src = 'assets/touxiang.png'; }
+    document.getElementById('navLoginText').textContent = isLoggedIn ? '' : '未登录';
+
+    // 左侧大图
+    document.getElementById('mainImg').src = versions[0];
+    document.getElementById('blurBg').style.backgroundImage = `url('${versions[0]}')`;
+    document.getElementById('fullscreenImg').src = versions[0];
+
+    // 下拉
+    const dropBtn = document.getElementById('dropBtn');
+    const dropMenu = document.getElementById('dropMenu');
+    dropBtn.addEventListener('click', e => { e.stopPropagation(); dropMenu.classList.toggle('open'); dropBtn.classList.toggle('open'); });
+    document.addEventListener('click', () => { dropMenu.classList.remove('open'); dropBtn.classList.remove('open'); });
+    document.querySelectorAll('.dropdown-item').forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        const i = +el.dataset.i;
+        localStorage.setItem('selectedDramaIndex', i);
+        localStorage.setItem('selectedDrama', JSON.stringify({ label: dramas[i] }));
+        window.location.href = 'step2.html';
+      });
+    });
+
+    document.getElementById('navRight').addEventListener('click', () => {
+      if (!isLoggedIn) document.getElementById('loginModal').style.display = 'flex';
+    });
+
+    // 版本选择
+    let selectedTier = 'free';
+    const tierCards = document.querySelectorAll('.tier-card');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    function updateDownloadBtn() {
+      if (selectedTier === 'free') {
+        downloadBtn.textContent = '↓ 免费下载 720p';
+      } else {
+        downloadBtn.textContent = '↓ ¥0.9 下载高清无水印';
+      }
+    }
+
+    tierCards.forEach(card => {
+      card.addEventListener('click', () => {
+        tierCards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedTier = card.dataset.tier;
+        updateDownloadBtn();
+      });
+    });
+
+    // 全屏
+    document.getElementById('imageSide').addEventListener('click', () => { document.getElementById('fullscreen').classList.add('active'); });
+    document.getElementById('fullscreen').addEventListener('click', e => { if (e.target !== document.querySelector('#fullscreen img')) document.getElementById('fullscreen').classList.remove('active'); });
+    document.getElementById('closeBtn').addEventListener('click', () => { document.getElementById('fullscreen').classList.remove('active'); });
+
+    // 下载（免费版加水印，付费版无水印）
+    function downloadImage(imgUrl, fileName, addWatermark) {
+      // 通过后端代理获取图片，绕过跨域限制
+      const proxyUrl = '/api/proxy-image?url=' + encodeURIComponent(imgUrl);
+      fetch(proxyUrl)
+        .then(r => r.blob())
+        .then(blob => {
+          const localUrl = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = function () {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            if (addWatermark) {
+              const fontSize = Math.max(52, Math.round(img.width / 9));
+              const pad = 24;
+              const text = '拾梦AI';
+              ctx.save();
+              ctx.font = `bold ${fontSize}px sans-serif`;
+              const tw = ctx.measureText(text).width;
+              const th = fontSize;
+              const tx = pad;
+              const ty = img.height - pad - th * 0.2;
+              // 半透明黑底
+              ctx.fillStyle = 'rgba(0,0,0,0.35)';
+              ctx.fillRect(tx - 8, ty - th - 4, tw + 16, th + 16);
+              // 白字
+              ctx.fillStyle = 'rgba(255,255,255,0.9)';
+              ctx.shadowColor = 'rgba(0,0,0,0.9)';
+              ctx.shadowBlur = 6;
+              ctx.fillText(text, tx, ty);
+              ctx.restore();
+            }
+
+            canvas.toBlob(blob2 => {
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob2);
+              a.download = fileName;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            }, 'image/png');
+            URL.revokeObjectURL(localUrl);
+          };
+          img.src = localUrl;
+        })
+        .catch(() => {
+          // 代理失败则直接下载原图
+          const a = document.createElement('a');
+          a.href = imgUrl; a.download = fileName;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
+    }
+
+    downloadBtn.addEventListener('click', () => {
+      if (selectedTier === 'paid') {
+        alert('付费 ¥0.9 解锁高清无水印（演示模式，直接下载）');
+      }
+      const isPaid = selectedTier === 'paid';
+      const fileName = '拾梦AI_古风形象_' + (isPaid ? '高清' : '标清') + '_' + Date.now() + '.png';
+      downloadImage(genImg, fileName, !isPaid);
+    });
+
+    // 继续生成同人文 → step5a
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      localStorage.setItem('generatedImage', genImg);
+      window.location.href = 'step5a.html';
+    });
+
+    // 登录弹窗
+    document.getElementById('loginClose').addEventListener('click', () => { document.getElementById('loginModal').style.display = 'none'; });
+    document.getElementById('loginModal').addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
+
+    let codeTimer = 0;
+    function sendCode() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      if (!/^1[3-9]\d{9}$/.test(phone)) { alert('请输入正确的手机号'); return; }
+      if (codeTimer > 0) return;
+      const btn = document.getElementById('sendCodeBtn');
+      codeTimer = 60; btn.disabled = true;
+      const t = setInterval(() => { codeTimer--; btn.textContent = codeTimer + 's后重试'; if (codeTimer <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = '获取验证码'; } }, 1000);
+      alert('验证码已发送（演示）');
+    }
+    function doLogin() {
+      const phone = document.getElementById('phoneInput').value.trim();
+      const code = document.getElementById('codeInput').value.trim();
+      if (!phone || !code) { alert('请填写手机号和验证码'); return; }
+      // legacy phone login removed
+      document.getElementById('loginModal').style.display = 'none';
+      location.reload();
+    }
+  </script>
+<script>
+    async function sendCode() {
+      const email = document.getElementById("emailInput").value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById("loginTip").textContent = "请输入正确的邮箱地址"; return; }
+      const btn = document.getElementById("codeBtn");
+      btn.disabled = true; document.getElementById("loginTip").textContent = "";
+      try {
+        const r = await fetch("/api/send-email-code", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+        const d = await r.json();
+        if (!r.ok) { document.getElementById("loginTip").textContent = d.error||"发送失败"; btn.disabled=false; return; }
+        let t=60; btn.textContent=t+"s";
+        const ti=setInterval(()=>{ t--; btn.textContent=t+"s"; if(t<=0){clearInterval(ti);btn.disabled=false;btn.textContent="获取验证码";}},1000);
+      } catch(e){ document.getElementById("loginTip").textContent="网络错误"; btn.disabled=false; }
+    }
+    async function doLogin() {
+      const email=document.getElementById("emailInput").value.trim();
+      const code=document.getElementById("codeInput").value.trim();
+      if(!email||!code){document.getElementById("loginTip").textContent="请填写邮箱和验证码";return;}
+      const btn=document.getElementById("loginSubmitBtn");
+      btn.disabled=true; btn.textContent="验证中";
+      try {
+        const r=await fetch("/api/verify-email-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,code})});
+        const d=await r.json();
+        if(!r.ok){document.getElementById("loginTip").textContent=d.error||"验证失败";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";return;}
+        localStorage.setItem("isLoggedIn","true"); localStorage.setItem("userEmail",email);
+        document.getElementById("loginModal").style.display="none";
+      } catch(e){document.getElementById("loginTip").textContent="网络错误";btn.disabled=false;btn.innerHTML="&#10022; 登 录 &#10022;";}
+    }
+  </script>
+</body>
+</html>
